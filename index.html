@@ -407,7 +407,7 @@ async function drawActs(acts){
       const row=(v,b,f)=>{need(rh);let x=MG;if(f){g.fillStyle='#eef1f5';g.fillRect(MG,y,cw.reduce((a,b)=>a+b),rh)}v.forEach((s,k)=>{g.strokeStyle='#000';g.lineWidth=1.5;g.strokeRect(x,y,cw[k],rh);font(19,b?700:400);g.fillText(fit(s,cw[k]-14),x+8,y+28);x+=cw[k]});y+=rh};
       row(hd,true,true);a.rest.forEach((r,i)=>row([i+1,kindOf(r.kind).short,itemLabel(r),r.ok?'ОК-'+r.ok:'',r.qty+((r.photos||[]).length?'  · фото':'')]));y+=18;
       for(const [i,r] of a.rest.entries()){if(!(r.photos||[]).length)continue;const pw=PW-2*MG;need(30+row1H(r.photos,pw));
-        text(`${i+1}. ${kindOf(r.kind).short} · ${itemLabel(r)}${r.ok?' · ОК-'+r.ok:''}`,MG,y+20,20,700);y+=30;y+=photoBlock(r.photos,MG,pw)}
+        text(`${i+1}. ${kindOf(r.kind).short} · ${itemLabel(r)}${r.ok?' · ОК-'+r.ok:''}`,MG,y+20,20,700);y+=30;photoBlock(r.photos,MG,pw)}
       y+=6;
     }
     if(a.note){need(60);text('Примечание:',MG,y+10,22,700);y+=38;font(21);wrap(a.note,MG,PW-2*MG,29);y+=8}
