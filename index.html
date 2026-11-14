@@ -9,9 +9,9 @@
 :root{--bg:#f3f5f8;--card:#fff;--ink:#1b2430;--muted:#6b7686;--line:#d9dee6;--acc:#1f4e79;--acc2:#e8f0fa;--ok:#1d7a3e;--bad:#b42318;--warn:#fff4d6}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.35 -apple-system,Roboto,"Segoe UI",Arial,sans-serif}
-header{position:sticky;top:0;z-index:5;background:var(--acc);color:#fff;padding:12px 16px;display:flex;align-items:center;gap:10px}
-header h1{font-size:18px;margin:0;flex:1}
-header button{background:rgba(255,255,255,.15);color:#fff;border:0;border-radius:10px;padding:8px 12px;font-size:15px}
+header{position:sticky;top:0;z-index:5;background:var(--acc);color:#fff;padding:12px 16px;display:flex;align-items:center;gap:8px}
+header h1{font-size:18px;margin:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+header button{background:rgba(255,255,255,.15);color:#fff;border:0;border-radius:10px;padding:8px 11px;font-size:14px}
 main{padding:12px 12px 110px;max-width:640px;margin:0 auto}
 .card{background:var(--card);border-radius:14px;padding:14px;margin:0 0 12px;box-shadow:0 1px 2px rgba(0,0,0,.06)}
 .card h2{font-size:16px;margin:0 0 10px;display:flex;align-items:center;gap:8px}
@@ -28,7 +28,7 @@ textarea{min-height:64px;resize:vertical}
 .btn.ghost{background:transparent;color:var(--acc);border:1px dashed var(--acc)}
 .btn.small{display:inline-block;width:auto;padding:8px 12px;font-size:14px}
 .del{border:0;background:transparent;color:var(--bad);font-size:14px;padding:6px}
-.win{border:1px solid var(--line);border-radius:12px;padding:10px;margin:0 0 10px}
+.win,.ritem{border:1px solid var(--line);border-radius:12px;padding:10px;margin:0 0 10px}
 .win-top{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .okn{width:84px}
 .stepper{display:flex;align-items:center;gap:6px;margin-left:auto}
@@ -38,200 +38,237 @@ textarea{min-height:64px;resize:vertical}
 .pane{border:2px solid #8a96a8;border-radius:8px;background:#eef4fb;padding:6px;text-align:center}
 .pane .n{font-size:12px;color:var(--muted);text-align:left}
 .pane .mk{font-size:30px;font-weight:700;height:40px;line-height:40px;cursor:pointer;user-select:none}
-.pane.m-plus{background:#e3f4e8;border-color:var(--ok)} .pane.m-minus{background:#fde8e6;border-color:var(--bad)}
-.pane.m-both{background:#fff1d6;border-color:#b7791f} .pane.m-x{background:#eceff3;border-color:#555}
+.pane.m-plus{background:#e3f4e8;border-color:var(--ok)}.pane.m-minus{background:#fde8e6;border-color:var(--bad)}
+.pane.m-both{background:#fff1d6;border-color:#b7791f}.pane.m-x{background:#eceff3;border-color:#555}
 .pane input{padding:6px;text-align:center;font-size:15px}
 .hint{font-size:12.5px;color:var(--muted);margin-top:6px}
-.ritem{border:1px solid var(--line);border-radius:12px;padding:10px;margin:0 0 8px}
-.ritem .t{font-weight:600}
-.ritem .k{font-size:12.5px;color:var(--muted)}
+.ritem .t{font-weight:600}.ritem .k{font-size:12.5px;color:var(--muted)}
 .ritem .row{margin-top:8px;align-items:flex-end}
+.ph{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;align-items:center}
+.ph .th{position:relative;width:64px;height:64px;border-radius:8px;overflow:hidden;background:#ddd}
+.ph .th img{width:100%;height:100%;object-fit:cover}
+.ph .th b{position:absolute;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);color:#fff;font-size:11px;text-align:center;padding:1px 0}
+.ph .pb{border:1px dashed var(--acc);color:var(--acc);background:#fff;border-radius:8px;height:40px;padding:0 10px;font-size:14px}
 .bar{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);padding:10px 12px calc(10px + env(safe-area-inset-bottom));z-index:6}
 .bar .in{max-width:640px;margin:0 auto;display:flex;gap:8px}
-.list .it{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--line)}
-.list .it:last-child{border-bottom:0}
-.list .it .m{flex:1}
-.list .it .s{font-size:13px;color:var(--muted)}
+.it{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.it:last-child{border-bottom:0}.it .m{flex:1}.it .s{font-size:13px;color:var(--muted)}
+.day{display:flex;align-items:center;gap:8px;margin:4px 0 2px}.day b{flex:1}
 .sheet{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:20;display:flex;align-items:flex-end}
 .sheet .p{background:#fff;width:100%;max-height:85vh;overflow:auto;border-radius:18px 18px 0 0;padding:16px 14px calc(16px + env(safe-area-inset-bottom))}
 .sheet h3{margin:4px 0 10px;font-size:17px}
 .prev img{width:100%;border:1px solid var(--line);border-radius:8px;margin:0 0 10px;background:#fff}
 .warn{background:var(--warn);border-radius:10px;padding:8px 10px;font-size:14px;margin:0 0 10px}
 .muted{color:var(--muted)}
-.hidden{display:none!important}
-.toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#222;color:#fff;padding:10px 14px;border-radius:10px;font-size:14px;z-index:30}
+.toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#222;color:#fff;padding:10px 14px;border-radius:10px;font-size:14px;z-index:30;max-width:90%}
+table.imp{width:100%;border-collapse:collapse;font-size:13px}table.imp td,table.imp th{border:1px solid var(--line);padding:4px}
 </style>
 </head>
 <body>
-<header><h1 id="ttl">Акты по квартирам</h1><button id="hdrBtn">Настройки</button></header>
+<header><h1 id="ttl">Акты по квартирам</h1><button id="hdrBtn">Меню</button></header>
 <main id="app"></main>
-<div class="bar" id="bar"><div class="in" id="barIn"></div></div>
-
+<div class="bar"><div class="in" id="barIn"></div></div>
+<input type="file" id="fileIn" accept="image/*" multiple style="display:none">
 <script>
 'use strict';
-/* ---------- справочник (как в Excel-форме) ---------- */
+/* ===== справочник ===== */
 const KINDS=[
- {code:1,short:'ПВХ',name:'Реставрация ПВХ конструкций',items:['Оконная рама','Створка','Импост','Штапик','Балконная дверь','Порог балконной двери','Витраж','Входная группа','Подоконник','Откос','Нащельник']},
- {code:3,short:'ЛКП',name:'Реставрация ЛКП металлоконструкций',items:['Отопительный прибор','Входная дверь','Коробка входной двери','Наличник входной двери','Петли входной двери','Ручка входной двери','Накладка замка входной двери','Раздвижная система','Отлив','Ограждение балкона (лоджии)','Алюминиевый витраж','Дверь кладовой','Почтовый ящик','Прочие металлоконструкции']},
- {code:2,short:'Плёнка',name:'Реставрация цветной плёнки ПВХ-профиля',items:['Оконная рама','Створка','Импост','Штапик','Балконная дверь','Витраж','Входная группа']},
- {code:4,short:'МДФ',name:'Реставрация МДФ панелей',items:['Панель МДФ входной двери','Наличник входной двери','Добор входной двери']},
- {code:5,short:'Плитка',name:'Реставрация керамической плитки',items:['Плитка пола','Плитка стен','Фасадная плита']},
- {code:6,short:'Регулировка',name:'Регулировка створок',items:['Створка окна','Створка балконной двери'],unit:'створок'}
+ {code:3,short:'ЛКП',items:['Отопительный прибор','Входная дверь','Коробка входной двери','Наличник входной двери','Петли входной двери','Ручка входной двери','Накладка замка входной двери','Раздвижная система','Отлив','Ограждение балкона (лоджии)','Алюминиевый витраж','Дверь кладовой','Почтовый ящик','Прочие металлоконструкции']},
+ {code:1,short:'ПВХ',items:['Оконная рама','Створка','Импост','Штапик','Балконная дверь','Порог балконной двери','Витраж','Входная группа','Подоконник','Откос','Нащельник']},
+ {code:2,short:'Плёнка',items:['Оконная рама','Створка','Импост','Штапик','Балконная дверь','Витраж','Входная группа']},
+ {code:4,short:'МДФ',items:['Панель МДФ входной двери','Наличник входной двери','Добор входной двери']},
+ {code:5,short:'Плитка',items:['Плитка пола','Плитка стен','Фасадная плита']},
+ {code:6,short:'Регулировка',items:['Створка окна','Створка балконной двери'],unit:'Створок'}
 ];
 const ABBR={'Отопительный прибор':'ОП'};
 const WTYPES=['ОК','Балконная дверь','Витраж','Входная группа','Лоджия'];
-const MARKS=['','+','−','±','×'];
-const MCLS={'+':'m-plus','−':'m-minus','±':'m-both','×':'m-x'};
+const MARKS=['','+','−','±','×'], MCLS={'+':'m-plus','−':'m-minus','±':'m-both','×':'m-x'};
 
-/* ---------- хранение ---------- */
-const KEY='akt-kv-v1';
-let DB={settings:{objects:[],workers:''},acts:[]};
-try{const s=localStorage.getItem(KEY); if(s) DB=Object.assign(DB,JSON.parse(s));}catch(e){}
-function save(){try{localStorage.setItem(KEY,JSON.stringify(DB));}catch(e){}}
+/* ===== хранение ===== */
+const KEY='akt-kv-v1', CKEY='akt-cfg';
+let DB={settings:{me:[],object:''},acts:[]};
+try{const s=localStorage.getItem(KEY); if(s){const d=JSON.parse(s); DB=Object.assign(DB,d)}}catch(e){}
+if(!Array.isArray(DB.settings.me))DB.settings.me=[];
+const toArr=v=>Array.isArray(v)?v:String(v||'').split(',').map(x=>x.trim()).filter(Boolean);
+DB.acts.forEach(a=>{a.workers=toArr(a.workers);a.windows.forEach(w=>w.photos=w.photos||[]);a.rest.forEach(r=>r.photos=r.photos||[])});
+let CFG={objects:[],workers:[]};
+try{const s=localStorage.getItem(CKEY); if(s) CFG=Object.assign(CFG,JSON.parse(s))}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(DB))}catch(e){toast('Память телефона заполнена — удалите старые акты')}}
+async function loadCfg(){try{const r=await fetch('config.json?'+Date.now(),{cache:'no-store'}); if(r.ok){const c=await r.json(); CFG=Object.assign({objects:[],workers:[]},c); try{localStorage.setItem(CKEY,JSON.stringify(CFG))}catch(e){} render()}}catch(e){}}
+// фото — IndexedDB
+let idb=null;
+function idbOpen(){return idb||(idb=new Promise((res,rej)=>{const r=indexedDB.open('akt-photos',1);r.onupgradeneeded=()=>r.result.createObjectStore('ph');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)}))}
+async function phPut(id,blob){const d=await idbOpen();return new Promise((res,rej)=>{const t=d.transaction('ph','readwrite');t.objectStore('ph').put(blob,id);t.oncomplete=res;t.onerror=()=>rej(t.error)})}
+async function phGet(id){const d=await idbOpen();return new Promise(res=>{const r=d.transaction('ph').objectStore('ph').get(id);r.onsuccess=()=>res(r.result);r.onerror=()=>res(null)})}
+async function phDel(id){const d=await idbOpen();return new Promise(res=>{const t=d.transaction('ph','readwrite');t.objectStore('ph').delete(id);t.oncomplete=res;t.onerror=res})}
+const urlCache={};
+async function phURL(id){if(urlCache[id])return urlCache[id];const b=await phGet(id);if(!b)return '';return urlCache[id]=URL.createObjectURL(b)}
+async function compress(file){
+  const bmp=await createImageBitmap(file).catch(()=>null); let w,h,src;
+  if(bmp){w=bmp.width;h=bmp.height;src=bmp}else{src=await new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=URL.createObjectURL(file)});w=src.naturalWidth;h=src.naturalHeight}
+  const k=Math.min(1,1400/Math.max(w,h)); const c=document.createElement('canvas'); c.width=Math.round(w*k); c.height=Math.round(h*k);
+  c.getContext('2d').drawImage(src,0,0,c.width,c.height); return new Promise(r=>c.toBlob(r,'image/jpeg',0.72));
+}
+function itemPhotos(a){const l=[];a.windows.forEach(w=>(w.photos||[]).forEach(p=>l.push(p.id)));a.rest.forEach(r=>(r.photos||[]).forEach(p=>l.push(p.id)));return l}
+
+/* ===== утилиты ===== */
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
-const today=()=>{const d=new Date();return d.toISOString().slice(0,10)};
+const today=()=>{const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,10)};
 const fmtDate=s=>s?s.split('-').reverse().join('.'):'';
 const num=v=>{const x=parseFloat(String(v).replace(',','.'));return isFinite(x)?x:0};
 const fmtN=x=>(Math.round(x*100)/100).toString().replace('.',',');
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-function toast(t){const d=document.createElement('div');d.className='toast';d.textContent=t;document.body.appendChild(d);setTimeout(()=>d.remove(),2200)}
-
-let view='list', cur=null;
-const $=s=>document.querySelector(s);
-const app=$('#app');
-
-function newAct(){
-  return {id:uid(),object:DB.settings.objects[0]||'',kv:'',date:today(),keysIn:'',keysOut:'',
-    workers:DB.settings.workers||'',windows:[],rest:[],note:'',created:Date.now()};
-}
+function toast(t){const d=document.createElement('div');d.className='toast';d.textContent=t;document.body.appendChild(d);setTimeout(()=>d.remove(),2600)}
+const $=s=>document.querySelector(s), app=$('#app');
+const objAddr=name=>{const o=CFG.objects.find(o=>o.name===name);return o?o.address||'':''};
 function winLabel(w){return w.type==='ОК'?('ОК-'+(w.ok||'?')):w.type}
-function itemLabel(r){
-  const ab=ABBR[r.item]; let s=r.item;
-  if(r.num) s+= ab?(' '+ab+'-'+r.num):(' №'+r.num); else if(ab) s+=' ('+ab+')';
-  return s;
-}
-function totals(a){
-  let m2=0,sp=0,warn=0,def=0;
-  a.windows.forEach(w=>w.panes.forEach(p=>{const v=num(p.m2); if(p.mark&&p.mark!=='×'){sp++; if(!v)warn++} m2+=v;}));
-  a.rest.forEach(r=>def+=num(r.qty));
-  return {m2,sp,warn,def};
-}
+function itemLabel(r){const ab=ABBR[r.item];let s=r.item;if(r.num)s+=ab?(' '+ab+'-'+r.num):(' №'+r.num);else if(ab)s+=' ('+ab+')';return s}
+const kindOf=c=>KINDS.find(k=>k.code===c)||{short:'?'};
+function totals(list){let m2=0,sp=0,warn=0,def=0;(Array.isArray(list)?list:[list]).forEach(a=>{
+  a.windows.forEach(w=>w.panes.forEach(p=>{const v=num(p.m2);if(p.mark&&p.mark!=='×'){sp++;if(!v)warn++}m2+=v}));a.rest.forEach(r=>def+=num(r.qty))});return {m2,sp,warn,def}}
+function workersStr(a){return (a.workers||[]).join(', ')}
 
-/* ---------- экраны ---------- */
+/* ===== навигация ===== */
+let view='list', cur=null, prevActs=null;
 function render(){
-  $('#ttl').textContent = view==='list'?'Акты по квартирам':view==='edit'?('Кв. '+(cur.kv||'…')):view==='settings'?'Настройки':'Готовый акт';
-  $('#hdrBtn').textContent = view==='list'?'Настройки':'← Назад';
-  if(view==='list') renderList();
-  else if(view==='edit') renderEdit();
-  else if(view==='settings') renderSettings();
-  else if(view==='preview') renderPreview();
+  const titles={list:'Акты по квартирам',edit:'Кв. '+(cur&&cur.kv||'…'),settings:'Кто я',preview:'Готовый акт',office:'Перенос в заявку',menu:'Меню'};
+  $('#ttl').textContent=titles[view]||'';
+  $('#hdrBtn').textContent=view==='list'?'Меню':'← Назад';
+  ({list:renderList,edit:renderEdit,settings:renderSettings,preview:renderPreview,office:renderOffice,menu:renderMenu})[view]();
 }
-$('#hdrBtn').onclick=()=>{ if(view==='list'){view='settings'} else if(view==='preview'){view='edit'} else {save(); view='list'} render(); window.scrollTo(0,0); };
+$('#hdrBtn').onclick=()=>{ if(view==='list')view='menu'; else if(view==='preview')view=prevActs&&prevActs.length===1&&cur?'edit':'list'; else {save();view='list'} render();scrollTo(0,0)};
+function go(v){view=v;render();scrollTo(0,0)}
+function bar(html){$('#barIn').innerHTML=html}
 
-function renderList(){
-  const acts=[...DB.acts].sort((a,b)=>b.created-a.created);
-  app.innerHTML=`
-   ${DB.settings.objects.length?'':'<div class="warn">Сначала добавьте объект в «Настройках» — он будет подставляться в каждый акт.</div>'}
-   <div class="card list"><h2>Мои акты</h2>
-   ${acts.length?acts.map(a=>{const t=totals(a);return `<div class="it" data-id="${a.id}"><div class="m"><b>Кв. ${esc(a.kv||'—')}</b> · ${fmtDate(a.date)}<div class="s">${esc(a.object)} · ${fmtN(t.m2)} м² · ${t.def} деф.</div></div><button class="btn small sec" data-open="${a.id}">Открыть</button></div>`}).join(''):'<div class="muted">Пока пусто. Нажмите «Новый акт».</div>'}
-   </div>`;
-  app.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>{cur=DB.acts.find(x=>x.id===b.dataset.open);view='edit';render();window.scrollTo(0,0)});
-  bar(`<button class="btn" id="bNew">+ Новый акт</button>`);
-  $('#bNew').onclick=()=>{cur=newAct();DB.acts.push(cur);save();view='edit';render();window.scrollTo(0,0)};
+function renderMenu(){
+  app.innerHTML=`<div class="card"><button class="btn sec" id="mMe">Кто я (выбрать себя)</button><div style="height:8px"></div>
+   <button class="btn sec" id="mOff">Перенос в заявку (для офиса)</button><div style="height:8px"></div>
+   <button class="btn sec" id="mCfg">Обновить списки объектов и работников</button></div>
+   <div class="card"><h2>Память телефона</h2><div class="hint">Акты и фото хранятся только на этом телефоне.</div>
+   <div style="margin-top:8px"><button class="btn sec" id="mOld">Удалить акты старше 30 дней</button></div></div>`;
+  $('#mMe').onclick=()=>go('settings'); $('#mOff').onclick=()=>go('office');
+  $('#mCfg').onclick=async()=>{await loadCfg();toast('Объектов: '+CFG.objects.length+', работников: '+CFG.workers.length)};
+  $('#mOld').onclick=async()=>{const lim=Date.now()-30*864e5;const old=DB.acts.filter(a=>a.created<lim);for(const a of old)for(const id of itemPhotos(a))await phDel(id);DB.acts=DB.acts.filter(a=>a.created>=lim);save();toast('Удалено актов: '+old.length)};
+  bar('');
 }
 
 function renderSettings(){
   const s=DB.settings;
-  app.innerHTML=`<div class="card"><h2>Объекты</h2>
-    <div id="objs">${s.objects.map((o,i)=>`<div class="row" style="margin-bottom:6px"><input value="${esc(o)}" data-o="${i}"><button class="del" data-od="${i}">Удалить</button></div>`).join('')}</div>
-    <button class="btn ghost" id="addObj">+ Добавить объект</button>
-    <div class="hint">Например: ЖК «Айвазовский», ул. Генерала Николая Матвеева, 4</div></div>
-    <div class="card"><h2>Исполнители по умолчанию</h2><input id="wk" value="${esc(s.workers)}" placeholder="Иванов И.И., Петров П.П."></div>
-    <div class="card"><h2>Данные</h2><div class="hint">Акты хранятся только на этом телефоне. Чтобы освободить место, удалите старые акты.</div>
-    <div style="margin-top:8px"><button class="btn sec" id="clrOld">Удалить акты старше 60 дней</button></div></div>`;
-  app.querySelectorAll('[data-o]').forEach(i=>i.oninput=()=>{s.objects[+i.dataset.o]=i.value;save()});
-  app.querySelectorAll('[data-od]').forEach(b=>b.onclick=()=>{s.objects.splice(+b.dataset.od,1);save();render()});
-  $('#addObj').onclick=()=>{s.objects.push('');save();render();const ins=app.querySelectorAll('[data-o]');ins[ins.length-1].focus()};
-  $('#wk').oninput=e=>{s.workers=e.target.value;save()};
-  $('#clrOld').onclick=()=>{const lim=Date.now()-60*864e5;const n=DB.acts.length;DB.acts=DB.acts.filter(a=>a.created>lim);save();toast('Удалено: '+(n-DB.acts.length))};
-  bar(`<button class="btn" id="bDone">Готово</button>`); $('#bDone').onclick=()=>{view='list';render()};
+  app.innerHTML=`<div class="card"><h2>Кто работает</h2>
+   ${CFG.workers.length?`<div class="chips">${CFG.workers.map(w=>`<button class="chip ${s.me.includes(w)?'on':''}" data-w="${esc(w)}">${esc(w)}</button>`).join('')}</div>
+   <div class="hint">Отметьте себя (и напарника, если работаете вместе). Это подставится в новые акты.</div>`
+   :`<div class="warn">Список работников ещё не задан. Нажмите «Меню → Обновить списки».</div>`}</div>
+   <div class="card"><h2>Объект по умолчанию</h2>${objSelect(s.object,'sObj')}</div>`;
+  app.querySelectorAll('[data-w]').forEach(b=>b.onclick=()=>{const w=b.dataset.w;s.me=s.me.includes(w)?s.me.filter(x=>x!==w):[...s.me,w];save();renderSettings()});
+  const so=$('#sObj'); if(so) so.onchange=()=>{s.object=so.value;save()};
+  bar(`<button class="btn" id="bDone">Готово</button>`); $('#bDone').onclick=()=>go('list');
+}
+function objSelect(val,id){
+  if(!CFG.objects.length) return `<div class="warn">Список объектов ещё не задан. Нажмите «Меню → Обновить списки».</div>`;
+  return `<select id="${id}"><option value="">— выберите объект —</option>${CFG.objects.map(o=>`<option ${o.name===val?'selected':''} value="${esc(o.name)}">${esc(o.name)}</option>`).join('')}</select>${val?`<div class="hint">${esc(objAddr(val))}</div>`:''}`;
+}
+
+function renderList(){
+  const by={}; DB.acts.forEach(a=>{(by[a.date]=by[a.date]||[]).push(a)});
+  const days=Object.keys(by).sort().reverse();
+  app.innerHTML=`${!DB.settings.me.length?'<div class="warn">Сначала выберите себя: «Меню → Кто я».</div>':''}
+   ${days.length?days.map(d=>{const L=by[d].sort((a,b)=>a.created-b.created);const t=totals(L);
+     return `<div class="card"><div class="day"><b>${fmtDate(d)}</b><span class="muted" style="font-size:13px">${L.length} кв. · ${fmtN(t.m2)} м² · ${t.def} деф.</span></div>
+     ${L.map(a=>{const tt=totals(a);return `<div class="it"><div class="m"><b>Кв. ${esc(a.kv||'—')}</b><div class="s">${esc(a.object||'объект не выбран')} · ${fmtN(tt.m2)} м² · ${tt.def} деф. · фото ${itemPhotos(a).length}</div></div><button class="btn small sec" data-open="${a.id}">Открыть</button></div>`}).join('')}
+     ${[...new Set(L.map(a=>a.object))].filter(o=>L.filter(a=>a.object===o).length>1).map(o=>`<div style="margin-top:8px"><button class="btn" data-day="${d}" data-obj="${esc(o)}">Общий акт за ${fmtDate(d)}${new Set(L.map(a=>a.object)).size>1?' · '+esc(o):''}</button></div>`).join('')}</div>`}).join('')
+   :'<div class="card muted">Пока пусто. Нажмите «Новый акт».</div>'}`;
+  app.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>{cur=DB.acts.find(x=>x.id===b.dataset.open);go('edit')});
+  app.querySelectorAll('[data-day]').forEach(b=>b.onclick=()=>{cur=null;prevActs=by[b.dataset.day].filter(a=>a.object===b.dataset.obj);go('preview')});
+  bar(`<button class="btn" id="bNew">+ Новый акт</button>`);
+  $('#bNew').onclick=()=>{cur={id:uid(),object:DB.settings.object||'',kv:'',date:today(),keysIn:'',keysOut:'',workers:[...DB.settings.me],windows:[],rest:[],note:'',created:Date.now()};DB.acts.push(cur);save();go('edit')};
 }
 
 function renderEdit(){
-  const a=cur, t=totals(a), objs=DB.settings.objects;
-  app.innerHTML=`
-  <div class="card"><h2>Квартира</h2>
-    <label>Объект</label>
-    ${objs.length?`<select id="fObj">${objs.map(o=>`<option ${o===a.object?'selected':''}>${esc(o)}</option>`).join('')}${objs.includes(a.object)||!a.object?'':`<option selected>${esc(a.object)}</option>`}</select>`:`<input id="fObj" value="${esc(a.object)}" placeholder="Название объекта">`}
-    <div class="row"><div><label>Квартира / помещение</label><input id="fKv" value="${esc(a.kv)}" inputmode="text" placeholder="271"></div>
-    <div><label>Дата</label><input id="fDate" type="date" value="${a.date}"></div></div>
-    <div class="row"><div><label>Ключи получены</label><input id="fKi" type="time" value="${a.keysIn}"></div>
-    <div><label>Ключи сданы</label><input id="fKo" type="time" value="${a.keysOut}"></div></div>
-    <label>Исполнители</label><input id="fWk" value="${esc(a.workers)}">
+  const a=cur,t=totals(a);
+  app.innerHTML=`<div class="card"><h2>Квартира</h2>
+   <label>Объект</label>${objSelect(a.object,'fObj')}
+   <div class="row"><div><label>Квартира / помещение</label><input id="fKv" value="${esc(a.kv)}" placeholder="271"></div>
+   <div><label>Дата</label><input id="fDate" type="date" value="${a.date}"></div></div>
+   <div class="row"><div><label>Ключи получены</label><input id="fKi" type="time" value="${a.keysIn}"></div><div><label>Ключи сданы</label><input id="fKo" type="time" value="${a.keysOut}"></div></div>
+   <label>Исполнители</label>${CFG.workers.length?`<div class="chips">${CFG.workers.map(w=>`<button class="chip ${a.workers.includes(w)?'on':''}" data-aw="${esc(w)}">${esc(w)}</button>`).join('')}</div>`:'<div class="muted">список работников не загружен</div>'}
   </div>
   <div class="card"><h2>Шлифовка стеклопакетов <span class="sum">${fmtN(t.m2)} м² · ${t.sp} СП</span></h2>
-    <div id="wins">${a.windows.map((w,i)=>winHtml(w,i)).join('')}</div>
-    ${t.warn?`<div class="warn">У ${t.warn} отмеченных СП не указана площадь.</div>`:''}
-    <button class="btn ghost" id="addWin">+ Окно / конструкция</button>
-    <div class="hint">Тап по стеклу меняет отметку: <b>+</b> снаружи → <b>−</b> изнутри → <b>±</b> с двух сторон → <b>×</b> не устраняется → пусто.</div>
-  </div>
+   <div>${a.windows.map(winHtml).join('')}</div>
+   ${t.warn?`<div class="warn">У ${t.warn} отмеченных СП не указана площадь.</div>`:''}
+   <button class="btn ghost" id="addWin">+ Окно / конструкция</button>
+   <div class="hint">Тап по стеклу: <b>+</b> снаружи → <b>−</b> изнутри → <b>±</b> с двух сторон → <b>×</b> не устраняется → пусто.</div></div>
   <div class="card"><h2>Реставрация <span class="sum">${t.def} деф.</span></h2>
-    <div id="rest">${a.rest.map((r,i)=>restHtml(r,i)).join('')}</div>
-    <button class="btn ghost" id="addRest">+ Предмет</button>
-  </div>
-  <div class="card"><h2>Примечание</h2><textarea id="fNote" placeholder="Что не сделано и почему, особенности">${esc(a.note)}</textarea></div>
-  <div style="text-align:center;margin:6px 0 0"><button class="del" id="delAct">Удалить этот акт</button></div>`;
-  const bind=(id,k)=>{const el=$(id); el.oninput=el.onchange=()=>{a[k]=el.value;save(); if(k==='kv') $('#ttl').textContent='Кв. '+(a.kv||'…')}};
-  bind('#fObj','object');bind('#fKv','kv');bind('#fDate','date');bind('#fKi','keysIn');bind('#fKo','keysOut');bind('#fWk','workers');bind('#fNote','note');
-  $('#addWin').onclick=()=>{a.windows.push({type:'ОК',ok:String(a.windows.filter(w=>w.type==='ОК').length+1),size:'',panes:[{mark:'',m2:''},{mark:'',m2:''}]});save();renderEdit()};
-  $('#addRest').onclick=()=>pickItem();
-  $('#delAct').onclick=()=>{if(confirm('Удалить акт по кв. '+(a.kv||'')+'?')){DB.acts=DB.acts.filter(x=>x.id!==a.id);save();view='list';render()}};
-  bindWins(); bindRest();
+   <div>${a.rest.map(restHtml).join('')}</div><button class="btn ghost" id="addRest">+ Предмет</button></div>
+  <div class="card"><h2>Примечание</h2><textarea id="fNote" placeholder="Что не сделано и почему">${esc(a.note)}</textarea></div>
+  <div style="text-align:center"><button class="del" id="delAct">Удалить этот акт</button></div>`;
+  const bind=(id,k)=>{const el=$(id);if(!el)return;el.oninput=el.onchange=()=>{a[k]=el.value;save();if(k==='kv')$('#ttl').textContent='Кв. '+(a.kv||'…');if(k==='object')renderEdit()}};
+  bind('#fObj','object');bind('#fKv','kv');bind('#fDate','date');bind('#fKi','keysIn');bind('#fKo','keysOut');bind('#fNote','note');
+  app.querySelectorAll('[data-aw]').forEach(b=>b.onclick=()=>{const w=b.dataset.aw;a.workers=a.workers.includes(w)?a.workers.filter(x=>x!==w):[...a.workers,w];save();b.classList.toggle('on')});
+  $('#addWin').onclick=()=>{a.windows.push({type:'ОК',ok:String(a.windows.filter(w=>w.type==='ОК').length+1),size:'',panes:[{mark:'',m2:''},{mark:'',m2:''}],photos:[]});save();renderEdit()};
+  $('#addRest').onclick=pickItem;
+  $('#delAct').onclick=async()=>{if(confirm('Удалить акт по кв. '+(a.kv||'')+' вместе с фото?')){for(const id of itemPhotos(a))await phDel(id);DB.acts=DB.acts.filter(x=>x.id!==a.id);save();go('list')}};
+  bindWins();bindRest();bindPhotos();
   bar(`<button class="btn" id="bMake">Сформировать акт</button>`);
-  $('#bMake').onclick=()=>{ if(!a.kv){toast('Укажите квартиру');$('#fKv').focus();return} view='preview'; render(); window.scrollTo(0,0)};
+  $('#bMake').onclick=()=>{if(!a.kv){toast('Укажите квартиру');$('#fKv').focus();return}if(!a.object){toast('Выберите объект');return}prevActs=[a];go('preview')};
+}
+function photoRow(list,key){
+  return `<div class="ph">${(list||[]).map((p,k)=>`<div class="th" data-th="${key}:${k}"><img data-src="${p.id}" alt=""><b>${p.tag}</b></div>`).join('')}
+   <button class="pb" data-add="${key}:до">📷 до</button><button class="pb" data-add="${key}:после">📷 после</button></div>`;
 }
 function winHtml(w,i){
-  return `<div class="win" data-w="${i}">
-   <div class="win-top">
-     <select data-wt="${i}" style="width:auto">${WTYPES.map(t=>`<option ${t===w.type?'selected':''}>${t}</option>`).join('')}</select>
-     ${w.type==='ОК'?`<input class="okn" data-wo="${i}" value="${esc(w.ok)}" inputmode="numeric" placeholder="№">`:''}
-     <div class="stepper"><button data-wm="${i}">−</button><span>${w.panes.length} СП</span><button data-wp="${i}">+</button></div>
-   </div>
+  return `<div class="win"><div class="win-top">
+   <select data-wt="${i}" style="width:auto">${WTYPES.map(t=>`<option ${t===w.type?'selected':''}>${t}</option>`).join('')}</select>
+   ${w.type==='ОК'?`<input class="okn" data-wo="${i}" value="${esc(w.ok)}" inputmode="numeric" placeholder="№">`:''}
+   <div class="stepper"><button data-wm="${i}">−</button><span>${w.panes.length} СП</span><button data-wp="${i}">+</button></div></div>
    <div class="panes">${w.panes.map((p,j)=>`<div class="pane ${MCLS[p.mark]||''}"><div class="n">${j+1} СП</div><div class="mk" data-pm="${i}:${j}">${p.mark||'·'}</div><input data-pa="${i}:${j}" value="${esc(p.m2)}" inputmode="decimal" placeholder="м²"></div>`).join('')}</div>
-   <div class="row" style="margin-top:8px;align-items:center"><input data-ws="${i}" value="${esc(w.size)}" placeholder="Размер СП (необязательно)"><button class="del" data-wd="${i}" style="flex:0 0 auto">Удалить</button></div>
-  </div>`;
+   ${photoRow(w.photos,'w'+i)}
+   <div class="row" style="margin-top:8px;align-items:center"><input data-ws="${i}" value="${esc(w.size)}" placeholder="Размер СП (необязательно)"><button class="del" data-wd="${i}" style="flex:0 0 auto">Удалить</button></div></div>`;
 }
-function bindWins(){
-  const a=cur;
-  app.querySelectorAll('[data-wt]').forEach(s=>s.onchange=()=>{a.windows[+s.dataset.wt].type=s.value;save();renderEdit()});
-  app.querySelectorAll('[data-wo]').forEach(s=>s.oninput=()=>{a.windows[+s.dataset.wo].ok=s.value;save()});
-  app.querySelectorAll('[data-ws]').forEach(s=>s.oninput=()=>{a.windows[+s.dataset.ws].size=s.value;save()});
-  app.querySelectorAll('[data-wp]').forEach(b=>b.onclick=()=>{const w=a.windows[+b.dataset.wp]; if(w.panes.length<12) w.panes.push({mark:'',m2:''});save();renderEdit()});
-  app.querySelectorAll('[data-wm]').forEach(b=>b.onclick=()=>{const w=a.windows[+b.dataset.wm]; if(w.panes.length>1) w.panes.pop();save();renderEdit()});
-  app.querySelectorAll('[data-wd]').forEach(b=>b.onclick=()=>{if(confirm('Удалить '+winLabel(a.windows[+b.dataset.wd])+'?')){a.windows.splice(+b.dataset.wd,1);save();renderEdit()}});
-  app.querySelectorAll('[data-pm]').forEach(d=>d.onclick=()=>{const [i,j]=d.dataset.pm.split(':').map(Number);const p=a.windows[i].panes[j];p.mark=MARKS[(MARKS.indexOf(p.mark)+1)%MARKS.length];save();
-     d.textContent=p.mark||'·'; d.parentNode.className='pane '+(MCLS[p.mark]||''); updSums()});
-  app.querySelectorAll('[data-pa]').forEach(s=>s.oninput=()=>{const [i,j]=s.dataset.pa.split(':').map(Number);a.windows[i].panes[j].m2=s.value;save();updSums()});
-}
-function updSums(){const t=totals(cur);const h=app.querySelectorAll('.card h2 .sum');if(h[0])h[0].textContent=fmtN(t.m2)+' м² · '+t.sp+' СП'}
 function restHtml(r,i){
-  const k=KINDS.find(k=>k.code===r.kind)||{short:'?'};
+  const k=kindOf(r.kind);
   return `<div class="ritem"><div class="row" style="align-items:center;margin:0"><div><div class="t">${esc(itemLabel(r))}</div><div class="k">${k.short}</div></div><button class="del" data-rd="${i}" style="flex:0 0 auto">Удалить</button></div>
-  <div class="row"><div><label>№ предмета</label><input data-rn="${i}" value="${esc(r.num)}" inputmode="numeric" placeholder="—"></div>
-  <div><label>ОК</label><input data-ro="${i}" value="${esc(r.ok)}" inputmode="numeric" placeholder="—"></div>
-  <div><label>${k.unit||'Дефектов'}</label><div class="stepper" style="margin:0"><button data-rm="${i}">−</button><span>${r.qty}</span><button data-rp="${i}">+</button></div></div></div></div>`;
+   <div class="row"><div><label>№ предмета</label><input data-rn="${i}" value="${esc(r.num)}" inputmode="numeric" placeholder="—"></div>
+   <div><label>ОК</label><input data-ro="${i}" value="${esc(r.ok)}" inputmode="numeric" placeholder="—"></div>
+   <div><label>${k.unit||'Дефектов'}</label><div class="stepper" style="margin:0"><button data-rm="${i}">−</button><span>${r.qty}</span><button data-rp="${i}">+</button></div></div></div>
+   ${photoRow(r.photos,'r'+i)}</div>`;
 }
+const listOf=key=>{const i=+key.slice(1);const o=key[0]==='w'?cur.windows[i]:cur.rest[i];o.photos=o.photos||[];return o.photos};
+function bindPhotos(){
+  app.querySelectorAll('img[data-src]').forEach(async im=>{im.src=await phURL(im.dataset.src)});
+  app.querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>{const [key,tag]=b.dataset.add.split(':');const fi=$('#fileIn');fi.value='';
+    fi.onchange=async()=>{const files=[...fi.files];if(!files.length)return;toast('Сохраняю фото…');
+      for(const f of files){try{const blob=await compress(f);const id=uid();await phPut(id,blob);listOf(key).push({id,tag})}catch(e){toast('Не удалось сохранить фото')}}
+      save();renderEdit()};fi.click()});
+  app.querySelectorAll('[data-th]').forEach(t=>t.onclick=()=>{const [key,k]=t.dataset.th.split(':');const L=listOf(key);const p=L[+k];
+    sheet(`<h3>Фото</h3><img src="${urlCache[p.id]||''}" style="width:100%;border-radius:8px"><div class="row" style="margin-top:10px">
+      <button class="btn ${p.tag==='до'?'':'sec'}" data-t="до">До</button><button class="btn ${p.tag==='после'?'':'sec'}" data-t="после">После</button></div>
+      <div style="height:8px"></div><button class="btn sec" data-t="del" style="color:var(--bad)">Удалить фото</button>`,async(v,close)=>{
+      if(v==='del'){await phDel(p.id);L.splice(+k,1)}else p.tag=v;save();close();renderEdit()})});
+}
+function sheet(html,onPick){const sh=document.createElement('div');sh.className='sheet';sh.innerHTML=`<div class="p">${html}<div style="height:8px"></div><button class="btn sec" data-t="x">Закрыть</button></div>`;
+  const close=()=>sh.remove();sh.onclick=e=>{if(e.target===sh)close()};sh.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>b.dataset.t==='x'?close():onPick(b.dataset.t,close));document.body.appendChild(sh);return sh}
+function bindWins(){
+  const a=cur,q=(s,f)=>app.querySelectorAll(s).forEach(f);
+  q('[data-wt]',s=>s.onchange=()=>{a.windows[+s.dataset.wt].type=s.value;save();renderEdit()});
+  q('[data-wo]',s=>s.oninput=()=>{a.windows[+s.dataset.wo].ok=s.value;save()});
+  q('[data-ws]',s=>s.oninput=()=>{a.windows[+s.dataset.ws].size=s.value;save()});
+  q('[data-wp]',b=>b.onclick=()=>{const w=a.windows[+b.dataset.wp];if(w.panes.length<12)w.panes.push({mark:'',m2:''});save();renderEdit()});
+  q('[data-wm]',b=>b.onclick=()=>{const w=a.windows[+b.dataset.wm];if(w.panes.length>1)w.panes.pop();save();renderEdit()});
+  q('[data-wd]',b=>b.onclick=async()=>{const w=a.windows[+b.dataset.wd];if(confirm('Удалить '+winLabel(w)+'?')){for(const p of w.photos||[])await phDel(p.id);a.windows.splice(+b.dataset.wd,1);save();renderEdit()}});
+  q('[data-pm]',d=>d.onclick=()=>{const [i,j]=d.dataset.pm.split(':').map(Number);const p=a.windows[i].panes[j];p.mark=MARKS[(MARKS.indexOf(p.mark)+1)%MARKS.length];save();d.textContent=p.mark||'·';d.parentNode.className='pane '+(MCLS[p.mark]||'');updSums()});
+  q('[data-pa]',s=>s.oninput=()=>{const [i,j]=s.dataset.pa.split(':').map(Number);a.windows[i].panes[j].m2=s.value;save();updSums()});
+}
+function updSums(){const t=totals(cur);const all=app.querySelectorAll('.card h2 .sum');if(all[0])all[0].textContent=fmtN(t.m2)+' м² · '+t.sp+' СП'}
 function bindRest(){
-  const a=cur;
-  app.querySelectorAll('[data-rd]').forEach(b=>b.onclick=()=>{a.rest.splice(+b.dataset.rd,1);save();renderEdit()});
-  app.querySelectorAll('[data-rn]').forEach(s=>s.oninput=()=>{a.rest[+s.dataset.rn].num=s.value;save();s.closest('.ritem').querySelector('.t').textContent=itemLabel(a.rest[+s.dataset.rn])});
-  app.querySelectorAll('[data-ro]').forEach(s=>s.oninput=()=>{a.rest[+s.dataset.ro].ok=s.value;save()});
-  app.querySelectorAll('[data-rp]').forEach(b=>b.onclick=()=>{a.rest[+b.dataset.rp].qty++;save();renderEdit()});
-  app.querySelectorAll('[data-rm]').forEach(b=>b.onclick=()=>{const r=a.rest[+b.dataset.rm]; if(r.qty>1) r.qty--;save();renderEdit()});
+  const a=cur,q=(s,f)=>app.querySelectorAll(s).forEach(f);
+  q('[data-rd]',b=>b.onclick=async()=>{const r=a.rest[+b.dataset.rd];for(const p of r.photos||[])await phDel(p.id);a.rest.splice(+b.dataset.rd,1);save();renderEdit()});
+  q('[data-rn]',s=>s.oninput=()=>{a.rest[+s.dataset.rn].num=s.value;save();s.closest('.ritem').querySelector('.t').textContent=itemLabel(a.rest[+s.dataset.rn])});
+  q('[data-ro]',s=>s.oninput=()=>{a.rest[+s.dataset.ro].ok=s.value;save()});
+  q('[data-rp]',b=>b.onclick=()=>{a.rest[+b.dataset.rp].qty++;save();renderEdit()});
+  q('[data-rm]',b=>b.onclick=()=>{const r=a.rest[+b.dataset.rm];if(r.qty>1)r.qty--;save();renderEdit()});
 }
 function pickItem(){
-  let kind=KINDS[0];
-  const sh=document.createElement('div');sh.className='sheet';
+  let kind=KINDS[0];const sh=document.createElement('div');sh.className='sheet';
   const draw=()=>{sh.innerHTML=`<div class="p"><h3>Что реставрировали?</h3>
     <div class="chips" style="margin-bottom:12px">${KINDS.map(k=>`<button class="chip ${k===kind?'on':''}" data-k="${k.code}">${k.short}</button>`).join('')}</div>
     <div class="chips">${kind.items.map(it=>`<button class="chip" data-it="${esc(it)}">${esc(it)}</button>`).join('')}</div>
@@ -239,150 +276,161 @@ function pickItem(){
     <div style="margin-top:14px"><button class="btn sec" id="shClose">Отмена</button></div></div>`;
     sh.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>{kind=KINDS.find(k=>k.code==b.dataset.k);draw()});
     sh.querySelectorAll('[data-it]').forEach(b=>b.onclick=()=>add(b.dataset.it));
-    sh.querySelector('#othrOk').onclick=()=>{const v=sh.querySelector('#othr').value.trim(); if(v) add(v)};
-    sh.querySelector('#shClose').onclick=()=>sh.remove();
-  };
-  const add=it=>{cur.rest.push({kind:kind.code,item:it,num:'',ok:'',qty:1});save();sh.remove();renderEdit();
+    sh.querySelector('#othrOk').onclick=()=>{const v=sh.querySelector('#othr').value.trim();if(v)add(v)};
+    sh.querySelector('#shClose').onclick=()=>sh.remove()};
+  const add=it=>{cur.rest.push({kind:kind.code,item:it,num:'',ok:'',qty:1,photos:[]});save();sh.remove();renderEdit();
     setTimeout(()=>{const l=app.querySelectorAll('.ritem');l[l.length-1].scrollIntoView({block:'center'})},50)};
-  sh.onclick=e=>{if(e.target===sh)sh.remove()};
-  draw();document.body.appendChild(sh);
+  sh.onclick=e=>{if(e.target===sh)sh.remove()};draw();document.body.appendChild(sh);
 }
-function bar(html){$('#barIn').innerHTML=html}
 
-/* ---------- отрисовка акта в картинку (A4, 150 dpi) ---------- */
-const PW=1240, PH=1754, MG=70;
-function drawAct(a){
-  const pages=[]; let c,g,y;
-  const newPage=()=>{c=document.createElement('canvas');c.width=PW;c.height=PH;g=c.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,PW,PH);g.fillStyle='#000';g.textBaseline='alphabetic';pages.push(c);y=MG;
-    if(pages.length>1){font(20,400,'#666');g.fillText('Кв. '+a.kv+' · '+fmtDate(a.date)+' · лист '+pages.length,MG,y);y+=36}};
-  const font=(px,w=400,col='#000')=>{g.font=`${w} ${px}px Roboto, Arial, "Helvetica Neue", sans-serif`;g.fillStyle=col};
-  const need=h=>{if(y+h>PH-MG-40)newPage()};
-  const wrap=(text,x,maxW,lh)=>{const words=String(text).split(/\s+/);let line='';for(const w of words){const t=line?line+' '+w:w;if(g.measureText(t).width>maxW&&line){need(lh);g.fillText(line,x,y);y+=lh;line=w}else line=t}if(line){need(lh);g.fillText(line,x,y);y+=lh}};
+/* ===== отрисовка акта (A4, 150 dpi) ===== */
+const PW=1240,PH=1754,MG=64;
+async function loadImgs(acts){const m={};for(const a of acts)for(const id of itemPhotos(a)){const b=await phGet(id);if(b){try{m[id]=await createImageBitmap(b)}catch(e){m[id]=await new Promise(r=>{const i=new Image();i.onload=()=>r(i);i.onerror=()=>r(null);i.src=URL.createObjectURL(b)})}}}return m}
+async function drawActs(acts){
+  const imgs=await loadImgs(acts);const pages=[];let g,y;const multi=acts.length>1;
+  const objs=[...new Set(acts.map(a=>a.object))], wks=[...new Set(acts.flatMap(a=>a.workers||[]))];
+  const font=(px,w=400,col='#000')=>{g.font=`${w} ${px}px Roboto, Arial, sans-serif`;g.fillStyle=col};
+  const newPage=()=>{const c=document.createElement('canvas');c.width=PW;c.height=PH;g=c.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,PW,PH);pages.push(c);y=MG;
+    if(pages.length>1){font(19,400,'#666');g.fillText((multi?'Акт за '+fmtDate(acts[0].date):'Кв. '+acts[0].kv+' · '+fmtDate(acts[0].date))+' (продолжение)',MG,y);y+=34}};
+  const need=h=>{if(y+h>PH-MG-30)newPage()};
+  const text=(s,x,yy,px,w,col,al)=>{font(px,w,col);g.textAlign=al||'left';g.fillText(s,x,yy);g.textAlign='left'};
+  const wrap=(s,x,maxW,lh)=>{let line='';for(const w of String(s).split(/\s+/)){const t=line?line+' '+w:w;if(g.measureText(t).width>maxW&&line){need(lh);g.fillText(line,x,y);y+=lh;line=w}else line=t}if(line){need(lh);g.fillText(line,x,y);y+=lh}};
+  const fit=(s,maxW)=>{s=String(s);while(g.measureText(s).width>maxW&&s.length>1)s=s.slice(0,-1);return s};
   newPage();
-  font(36,700);g.textAlign='center';g.fillText('АКТ ВЫПОЛНЕННЫХ РАБОТ ПО КВАРТИРЕ',PW/2,y+20);y+=58;
-  font(20,400,'#555');g.fillText('внутренний документ · фото — в чате объекта',PW/2,y);y+=44;g.textAlign='left';
-  const t=totals(a);
-  const info=[['Объект',a.object],['Квартира / помещение',a.kv],['Дата',fmtDate(a.date)+(a.keysIn||a.keysOut?`     ключи: получены ${a.keysIn||'—'}, сданы ${a.keysOut||'—'}`:'')],['Исполнители',a.workers]];
-  for(const [k,v] of info){font(24,700);g.fillText(k+':',MG,y);const kw=g.measureText(k+': ').width;font(24);wrap(v||'—',MG+kw,PW-2*MG-kw,32);y+=4}
-  y+=10;
-  // шлифовка
-  if(a.windows.length){
-    need(80);font(28,700);g.fillText('Шлифовка стеклопакетов',MG,y+10);font(22,400,'#444');g.textAlign='right';g.fillText(`итого ${fmtN(t.m2)} м², ${t.sp} СП`,PW-MG,y+10);g.textAlign='left';y+=26;
-    font(19,400,'#444');g.fillText('+ снаружи   − изнутри   ± с двух сторон   × не устраняется (брак / трещина)',MG,y+20);y+=40;
-    const cols=3,gap=24,bw=(PW-2*MG-gap*(cols-1))/cols;
-    let col=0,rowH=0,rowY=y;
-    a.windows.forEach((w,wi)=>{
-      const n=w.panes.length, per=n<=4?n:Math.ceil(n/2), rows=Math.ceil(n/per);
-      const ph=110, bh=58+rows*ph+ (w.size?30:0)+36;
-      if(col===0){need(bh);rowY=y;rowH=0}
-      const x=MG+col*(bw+gap), yy=rowY;
-      g.strokeStyle='#000';g.lineWidth=2;g.strokeRect(x,yy,bw,bh);
-      font(24,700);g.fillText(winLabel(w),x+12,yy+32);font(19,400,'#555');g.textAlign='right';g.fillText(n+' СП',x+bw-12,yy+32);g.textAlign='left';
-      const fx=x+12,fy=yy+46,fw=bw-24,fh=rows*ph;
-      g.lineWidth=4;g.strokeRect(fx,fy,fw,fh);g.lineWidth=2;
-      const pw=fw/per;
-      let wm=0;
-      w.panes.forEach((p,j)=>{const r=Math.floor(j/per),cI=j%per;const px=fx+cI*pw,py=fy+r*ph;
-        g.strokeRect(px+4,py+4,pw-8,ph-8);
-        font(17,400,'#555');g.fillText(String(j+1),px+10,py+24);
-        if(p.mark){font(48,700,p.mark==='×'?'#444':'#000');g.textAlign='center';g.fillText(p.mark,px+pw/2,py+68);g.textAlign='left'}
-        if(num(p.m2)){font(18,600);g.textAlign='center';g.fillText(fmtN(num(p.m2))+' м²',px+pw/2,py+ph-14);g.textAlign='left';wm+=num(p.m2)}
-      });
-      let by=fy+fh+26;
-      if(w.size){font(18,400,'#444');g.fillText('Размер: '+w.size,x+12,by);by+=28}
-      font(19,600);g.fillText('Итого: '+fmtN(wm)+' м²',x+12,by);
-      rowH=Math.max(rowH,bh);
-      col++; if(col===cols||wi===a.windows.length-1){col=0;y=rowY+rowH+gap}
-    });
+  text(multi?'АКТ ВЫПОЛНЕННЫХ РАБОТ ЗА ДЕНЬ':'АКТ ВЫПОЛНЕННЫХ РАБОТ ПО КВАРТИРЕ',PW/2,y+22,34,700,'#000','center');y+=56;
+  text('внутренний документ',PW/2,y,19,400,'#666','center');y+=40;
+  const info=[['Объект',objs.map(o=>o+(objAddr(o)?', '+objAddr(o):'')).join('; ')],[multi?'Квартиры':'Квартира / помещение',acts.map(a=>a.kv).join(', ')],
+    ['Дата',fmtDate(acts[0].date)+(!multi&&(acts[0].keysIn||acts[0].keysOut)?`     ключи: получены ${acts[0].keysIn||'—'}, сданы ${acts[0].keysOut||'—'}`:'')],['Исполнители',wks.join(', ')||'—']];
+  for(const [k,v] of info){font(23,700);g.fillText(k+':',MG,y);const kw=g.measureText(k+': ').width;font(23);wrap(v||'—',MG+kw,PW-2*MG-kw,31);y+=3}
+  y+=8;
+  if(multi){ // сводка по квартирам
+    const cw=[300,300,300,212],hd=['Квартира','Шлифовка, м²','СП','Реставрация, деф.'],rh=40;
+    const row=(v,b,f)=>{need(rh);let x=MG;if(f){g.fillStyle='#eef1f5';g.fillRect(MG,y,cw.reduce((a,b)=>a+b),rh)}v.forEach((s,k)=>{g.strokeStyle='#000';g.lineWidth=1.5;g.strokeRect(x,y,cw[k],rh);font(20,b?700:400);g.fillText(fit(s,cw[k]-14),x+8,y+27);x+=cw[k]});y+=rh};
+    row(hd,true,true);acts.forEach(a=>{const t=totals(a);row(['Кв. '+a.kv,fmtN(t.m2),t.sp,t.def])});const T=totals(acts);row(['ИТОГО',fmtN(T.m2),T.sp,T.def],true,true);y+=26;
   }
-  // реставрация
-  if(a.rest.length){
-    need(110);font(28,700);g.fillText('Реставрация',MG,y+10);font(22,400,'#444');g.textAlign='right';g.fillText(`итого ${t.def} деф.`,PW-MG,y+10);g.textAlign='left';y+=30;
-    const cw=[60,220,520,180,120];const head=['№','Вид','Предмет','Где','Деф.'];const rh=44;
-    const rowF=(vals,bold,fill)=>{need(rh);let x=MG;if(fill){g.fillStyle='#eef1f5';g.fillRect(MG,y,cw.reduce((s,v)=>s+v,0),rh)}
-      vals.forEach((v,k)=>{g.strokeStyle='#000';g.lineWidth=1.5;g.strokeRect(x,y,cw[k],rh);font(20,bold?700:400);
-        let s=String(v);while(g.measureText(s).width>cw[k]-16&&s.length>1)s=s.slice(0,-1);g.fillText(s,x+8,y+29);x+=cw[k]});y+=rh};
-    rowF(head,true,true);
-    a.rest.forEach((r,i)=>{const k=KINDS.find(k=>k.code===r.kind)||{short:''};rowF([i+1,k.short,itemLabel(r),r.ok?'ОК-'+r.ok:'',r.qty],false)});
-    y+=24;
+  const photoBlock=(list,x,w)=>{ // возвращает высоту и рисует
+    const ph=list.map(p=>({p,im:imgs[p.id]})).filter(o=>o.im).sort((a,b)=>(a.p.tag==='до'?0:1)-(b.p.tag==='до'?0:1));
+    if(!ph.length)return 0;const cols=2,gap=14,cw=(w-gap)/cols,maxH=300;let yy=0,i=0;const startY=y;
+    while(i<ph.length){const rowItems=ph.slice(i,i+cols);const hs=rowItems.map(o=>Math.min(maxH,cw*o.im.height/o.im.width));const rh=Math.max(...hs)+30;
+      rowItems.forEach((o,k)=>{const iw=Math.min(cw,maxH*o.im.width/o.im.height),ih=iw*o.im.height/o.im.width,xx=x+k*(cw+gap);
+        font(18,700,o.p.tag==='до'?'#b42318':'#1d7a3e');g.fillText(o.p.tag.toUpperCase(),xx,startY+yy+18);g.drawImage(o.im,xx,startY+yy+26,iw,ih);g.strokeStyle='#999';g.lineWidth=1;g.strokeRect(xx,startY+yy+26,iw,ih)});
+      yy+=rh+gap;i+=cols}
+    return yy;
+  };
+  const photoH=(list,w)=>{const ph=list.map(p=>imgs[p.id]).filter(Boolean);if(!ph.length)return 0;const cw=(w-14)/2;let h=0;for(let i=0;i<ph.length;i+=2){h+=Math.max(...ph.slice(i,i+2).map(im=>Math.min(300,cw*im.height/im.width)))+30+14}return h};
+  const winBox=(w,x,yy,bw,draw=true)=>{ // схема окна
+    const n=w.panes.length,per=n<=4?n:Math.ceil(n/2),rows=Math.ceil(n/per),ph=100,bh=56+rows*ph+(w.size?28:0)+34;if(!draw)return bh;
+    g.strokeStyle='#000';g.lineWidth=2;g.strokeRect(x,yy,bw,bh);text(winLabel(w),x+12,yy+31,23,700);text(n+' СП',x+bw-12,yy+31,18,400,'#555','right');
+    const fx=x+12,fy=yy+44,fw=bw-24,fh=rows*ph,pw=fw/per;g.lineWidth=4;g.strokeRect(fx,fy,fw,fh);g.lineWidth=2;let wm=0;
+    w.panes.forEach((p,j)=>{const r=Math.floor(j/per),c=j%per,px=fx+c*pw,py=fy+r*ph;g.strokeRect(px+4,py+4,pw-8,ph-8);text(String(j+1),px+10,py+23,16,400,'#555');
+      if(p.mark)text(p.mark,px+pw/2,py+64,46,700,p.mark==='×'?'#444':'#000','center');if(num(p.m2)){text(fmtN(num(p.m2))+' м²',px+pw/2,py+ph-12,17,600,'#000','center');wm+=num(p.m2)}});
+    let by=fy+fh+25;if(w.size){text('Размер: '+w.size,x+12,by,17,400,'#444');by+=28}text('Итого: '+fmtN(wm)+' м²',x+12,by,18,600);return bh};
+  for(const a of acts){
+    const t=totals(a);
+    if(multi){need(70);g.fillStyle='#1f4e79';g.fillRect(MG,y,PW-2*MG,44);text('Кв. '+a.kv+(objs.length>1?' · '+a.object:''),MG+14,y+30,24,700,'#fff');
+      text(`${fmtN(t.m2)} м² · ${t.def} деф.`,PW-MG-14,y+30,20,400,'#fff','right');y+=60}
+    if(a.windows.length){
+      need(80);text('Шлифовка стеклопакетов',MG,y+8,26,700);text(`итого ${fmtN(t.m2)} м², ${t.sp} СП`,PW-MG,y+8,20,400,'#444','right');y+=22;
+      text('+ снаружи   − изнутри   ± с двух сторон   × не устраняется (брак / трещина)',MG,y+20,18,400,'#444');y+=38;
+      const plain=a.windows.filter(w=>!(w.photos||[]).length),withPh=a.windows.filter(w=>(w.photos||[]).length);
+      const cols=3,gap=22,bw=(PW-2*MG-gap*(cols-1))/cols;
+      for(let i=0;i<plain.length;i+=cols){const grp=plain.slice(i,i+cols);const h=Math.max(...grp.map(w=>winBox(w,0,0,bw,false)));need(h);grp.forEach((w,k)=>winBox(w,MG+k*(bw+gap),y,bw));y+=h+gap}
+      for(const w of withPh){const bh=winBox(w,0,0,bw,false),pw=PW-2*MG-bw-gap,ph=photoH(w.photos,pw);need(Math.min(Math.max(bh,ph),PH-2*MG-60));
+        const y0=y;winBox(w,MG,y0,bw);const used=photoBlock(w.photos,MG+bw+gap,pw);y=y0+Math.max(bh,used)+gap}
+    }
+    if(a.rest.length){
+      need(100);text('Реставрация',MG,y+8,26,700);text(`итого ${t.def} деф.`,PW-MG,y+8,20,400,'#444','right');y+=24;
+      const cw=[56,190,520,170,176],hd=['№','Вид','Предмет','Где','Деф.'],rh=42;
+      const row=(v,b,f)=>{need(rh);let x=MG;if(f){g.fillStyle='#eef1f5';g.fillRect(MG,y,cw.reduce((a,b)=>a+b),rh)}v.forEach((s,k)=>{g.strokeStyle='#000';g.lineWidth=1.5;g.strokeRect(x,y,cw[k],rh);font(19,b?700:400);g.fillText(fit(s,cw[k]-14),x+8,y+28);x+=cw[k]});y+=rh};
+      row(hd,true,true);a.rest.forEach((r,i)=>row([i+1,kindOf(r.kind).short,itemLabel(r),r.ok?'ОК-'+r.ok:'',r.qty+((r.photos||[]).length?'  · фото':'')]));y+=18;
+      for(const [i,r] of a.rest.entries()){if(!(r.photos||[]).length)continue;const pw=PW-2*MG,ph=photoH(r.photos,pw);need(Math.min(ph+40,PH-2*MG-60));
+        text(`${i+1}. ${kindOf(r.kind).short} · ${itemLabel(r)}${r.ok?' · ОК-'+r.ok:''}`,MG,y+20,20,700);y+=30;y+=photoBlock(r.photos,MG,pw)}
+      y+=6;
+    }
+    if(a.note){need(60);text('Примечание:',MG,y+10,22,700);y+=38;font(21);wrap(a.note,MG,PW-2*MG,29);y+=8}
+    if(multi)y+=10;
   }
-  if(a.note){need(60);font(24,700);g.fillText('Примечание:',MG,y+10);y+=40;font(22);wrap(a.note,MG,PW-2*MG,30);y+=10}
-  // итоги и подтверждение
-  need(230);
-  g.strokeStyle='#000';g.lineWidth=2;g.strokeRect(MG,y,PW-2*MG,92);
-  font(24,700);g.fillText('Итого по квартире:',MG+16,y+38);font(24);
-  g.fillText(`шлифовка ${fmtN(t.m2)} м² (${t.sp} СП)     реставрация ${t.def} деф.`,MG+250,y+38);
-  font(20,400,'#333');g.fillText('Исполнители: '+(a.workers||'—'),MG+16,y+74);y+=124;
-  font(21,400,'#000');wrap('Места выполнения работ и объём подтверждаются прорабом ответом на это сообщение в чате объекта.',MG,PW-2*MG,30);
-  font(17,400,'#777');g.fillText('Сформировано '+new Date().toLocaleString('ru-RU'),MG,PH-MG+10);
-  pages.forEach((p,i)=>{if(pages.length>1){const q=p.getContext('2d');q.font='400 17px Arial';q.fillStyle='#777';q.textAlign='right';q.fillText('лист '+(i+1)+' из '+pages.length,PW-MG,PH-MG+10)}});
+  const T=totals(acts);need(200);g.strokeStyle='#000';g.lineWidth=2;g.strokeRect(MG,y,PW-2*MG,86);
+  text(multi?'Итого за день:':'Итого по квартире:',MG+16,y+36,23,700);text(`шлифовка ${fmtN(T.m2)} м² (${T.sp} СП)     реставрация ${T.def} деф.`,MG+250,y+36,23);
+  text('Исполнители: '+(wks.join(', ')||'—'),MG+16,y+70,19,400,'#333');y+=116;
+  font(20);wrap('Места выполнения работ и объём подтверждаются прорабом ответом на это сообщение в чате объекта.',MG,PW-2*MG,28);
+  const stamp='Сформировано '+new Date().toLocaleString('ru-RU');
+  pages.forEach((p,i)=>{const q=p.getContext('2d');q.font='400 16px Arial';q.fillStyle='#777';q.textAlign='left';q.fillText(stamp,MG,PH-MG+14);q.textAlign='right';if(pages.length>1)q.fillText('лист '+(i+1)+' из '+pages.length,PW-MG,PH-MG+14)});
   return pages;
 }
 
-/* ---------- PDF из картинок (без библиотек) ---------- */
+/* ===== PDF без библиотек ===== */
 function dataURLtoBytes(u){const b=atob(u.split(',')[1]);const a=new Uint8Array(b.length);for(let i=0;i<b.length;i++)a[i]=b.charCodeAt(i);return a}
-function makePDF(canvases){
-  const enc=new TextEncoder();const parts=[];let len=0;const offs=[];
-  const push=x=>{const b=typeof x==='string'?enc.encode(x):x;parts.push(b);len+=b.length};
-  const n=canvases.length;const W=595.28,H=841.89;
-  push('%PDF-1.4\n%\xE2\xE3\xCF\xD3\n');
+function makePDF(cvs){
+  const enc=new TextEncoder(),parts=[],offs=[];let len=0;const push=x=>{const b=typeof x==='string'?enc.encode(x):x;parts.push(b);len+=b.length};
+  const n=cvs.length,W=595.28,H=841.89;push('%PDF-1.4\n%\xE2\xE3\xCF\xD3\n');
   const obj=(id,body)=>{offs[id]=len;push(id+' 0 obj\n');body();push('\nendobj\n')};
-  obj(1,()=>push('<< /Type /Catalog /Pages 2 0 R >>'));
-  const kids=[];for(let i=0;i<n;i++)kids.push((3+i*3)+' 0 R');
+  obj(1,()=>push('<< /Type /Catalog /Pages 2 0 R >>'));const kids=[];for(let i=0;i<n;i++)kids.push((3+i*3)+' 0 R');
   obj(2,()=>push(`<< /Type /Pages /Count ${n} /Kids [${kids.join(' ')}] >>`));
-  canvases.forEach((cv,i)=>{
-    const pid=3+i*3,cid=pid+1,iid=pid+2;
-    const jpg=dataURLtoBytes(cv.toDataURL('image/jpeg',0.9));
+  cvs.forEach((cv,i)=>{const pid=3+i*3,cid=pid+1,iid=pid+2,jpg=dataURLtoBytes(cv.toDataURL('image/jpeg',0.85));
     obj(pid,()=>push(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${W} ${H}] /Resources << /XObject << /Im0 ${iid} 0 R >> >> /Contents ${cid} 0 R >>`));
-    const cs=`q ${W} 0 0 ${H} 0 0 cm /Im0 Do Q`;
-    obj(cid,()=>push(`<< /Length ${cs.length} >>\nstream\n${cs}\nendstream`));
-    obj(iid,()=>{push(`<< /Type /XObject /Subtype /Image /Width ${cv.width} /Height ${cv.height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${jpg.length} >>\nstream\n`);push(jpg);push('\nendstream')});
-  });
-  const total=3+n*3;const xref=len;
-  let x=`xref\n0 ${total}\n0000000000 65535 f \n`;for(let i=1;i<total;i++)x+=String(offs[i]).padStart(10,'0')+' 00000 n \n';
-  push(x+`trailer\n<< /Size ${total} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF`);
-  return new Blob(parts,{type:'application/pdf'});
+    const cs=`q ${W} 0 0 ${H} 0 0 cm /Im0 Do Q`;obj(cid,()=>push(`<< /Length ${cs.length} >>\nstream\n${cs}\nendstream`));
+    obj(iid,()=>{push(`<< /Type /XObject /Subtype /Image /Width ${cv.width} /Height ${cv.height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${jpg.length} >>\nstream\n`);push(jpg);push('\nendstream')})});
+  const total=3+n*3,xref=len;let x=`xref\n0 ${total}\n0000000000 65535 f \n`;for(let i=1;i<total;i++)x+=String(offs[i]).padStart(10,'0')+' 00000 n \n';
+  push(x+`trailer\n<< /Size ${total} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF`);return new Blob(parts,{type:'application/pdf'});
 }
 
-/* ---------- строки для Excel (колонки A–G листа ввода) ---------- */
-function excelRows(a){
-  const out=[];const kv=a.kv;
-  a.windows.forEach(w=>w.panes.forEach((p,j)=>{if(!p.mark||p.mark==='×'||!num(p.m2))return;
-    out.push([kv,'шлиф',w.type==='ОК'?w.ok:w.type,j+1,'',w.size||'',fmtN(num(p.m2))])}));
-  a.rest.forEach(r=>out.push([kv,r.kind,r.ok||'','',r.item+(r.num?' '+r.num:''),'',r.qty]));
-  return out.map(r=>r.join('\t')).join('\n');
+/* ===== текстовый отчёт + строки для заявки ===== */
+function dataRows(acts){const out=[];acts.forEach(a=>{
+  a.windows.forEach(w=>w.panes.forEach((p,j)=>{if(!p.mark||p.mark==='×'||!num(p.m2))return;out.push([a.kv,'шлиф',w.type==='ОК'?w.ok:w.type,j+1,'',w.size||'',fmtN(num(p.m2))])}));
+  a.rest.forEach(r=>out.push([a.kv,r.kind,r.ok||'','',r.item+(r.num?' '+r.num:''),'',r.qty]))});return out}
+function textReport(acts){
+  const T=totals(acts),objs=[...new Set(acts.map(a=>a.object))],wks=[...new Set(acts.flatMap(a=>a.workers||[]))];
+  let s=`Акт ${acts.length>1?'за день ':''}${fmtDate(acts[0].date)} — ${objs.join('; ')}\nИсполнители: ${wks.join(', ')||'—'}\n`;
+  acts.forEach(a=>{const t=totals(a);const ws=a.windows.map(w=>{const p=w.panes.map((p,j)=>p.mark&&p.mark!=='×'?`${j+1}СП${p.mark}${num(p.m2)?' '+fmtN(num(p.m2)):''}`:'').filter(Boolean);return p.length?winLabel(w)+': '+p.join(', '):''}).filter(Boolean);
+    const rs=a.rest.map(r=>`${kindOf(r.kind).short} ${itemLabel(r)}${r.ok?' ОК-'+r.ok:''} — ${r.qty}`);
+    s+=`\nКв. ${a.kv}: шлифовка ${fmtN(t.m2)} м²${ws.length?' ('+ws.join('; ')+')':''}${rs.length?'; реставрация '+t.def+' деф. ('+rs.join('; ')+')':''}${a.note?'. Прим.: '+a.note:''}`});
+  s+=`\n\nИтого: шлифовка ${fmtN(T.m2)} м² (${T.sp} СП), реставрация ${T.def} деф.\n\nДля заявки:\n`+dataRows(acts).map(r=>r.join(';')).join('\n');
+  return s;
 }
+async function copyText(t){try{await navigator.clipboard.writeText(t);return true}catch(e){const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();let ok=false;try{ok=document.execCommand('copy')}catch(_){}ta.remove();return ok}}
 
-/* ---------- экран готового акта ---------- */
+/* ===== экран готового акта ===== */
 let lastPages=[];
-function fileName(a,ext){return `Акт кв ${String(a.kv).replace(/[\\/:*?"<>|]/g,'-')} ${fmtDate(a.date)}.${ext}`}
-function renderPreview(){
-  const a=cur;lastPages=drawAct(a);const t=totals(a);
-  const imgs=lastPages.map(p=>`<img src="${p.toDataURL('image/png')}" alt="лист акта">`).join('');
-  app.innerHTML=`${t.warn?`<div class="warn">У ${t.warn} отмеченных СП нет площади — они не попадут в строки для Excel.</div>`:''}
-   <div class="card prev">${imgs}</div>
-   <div class="card"><h2>Отправить</h2>
-     <button class="btn" id="shImg">Отправить картинкой</button>
-     <div style="height:8px"></div><button class="btn sec" id="shPdf">Отправить PDF</button>
-     <div style="height:8px"></div><button class="btn sec" id="cpRows">Скопировать строки для Excel</button>
-     <div class="hint">«Отправить» открывает меню «Поделиться» — выберите МАКС и чат объекта. Строки для Excel вставляются в лист ввода заявки / акта с колонки A.</div></div>`;
-  $('#shImg').onclick=async()=>{const files=[];for(let i=0;i<lastPages.length;i++){const b=await new Promise(r=>lastPages[i].toBlob(r,'image/png'));files.push(new File([b],fileName(a,'png').replace('.png',lastPages.length>1?` л${i+1}.png`:'.png'),{type:'image/png'}))}share(files)};
-  $('#shPdf').onclick=()=>share([new File([makePDF(lastPages)],fileName(a,'pdf'),{type:'application/pdf'})]);
-  $('#cpRows').onclick=async()=>{const txt=excelRows(a);if(!txt){toast('Нечего копировать');return}
-    try{await navigator.clipboard.writeText(txt);toast('Скопировано: '+txt.split('\n').length+' строк')}
-    catch(e){if(navigator.share){try{await navigator.share({text:txt});return}catch(_){}}prompt('Скопируйте строки:',txt)}};
-  bar(`<button class="btn sec" id="bEdit">Исправить</button><button class="btn" id="bList">К списку</button>`);
-  $('#bEdit').onclick=()=>{view='edit';render()};$('#bList').onclick=()=>{view='list';render()};
+const fname=(acts,ext)=>(acts.length>1?`Акт за день ${fmtDate(acts[0].date)}`:`Акт кв ${String(acts[0].kv).replace(/[\\/:*?"<>|]/g,'-')} ${fmtDate(acts[0].date)}`)+'.'+ext;
+async function renderPreview(){
+  const acts=prevActs;app.innerHTML='<div class="card muted">Собираю акт…</div>';bar('');
+  lastPages=await drawActs(acts);const t=totals(acts);
+  app.innerHTML=`${t.warn?`<div class="warn">У ${t.warn} отмеченных СП нет площади — они не попадут в строки для заявки.</div>`:''}
+   <div class="card prev">${lastPages.map(p=>`<img src="${p.toDataURL('image/jpeg',0.8)}" alt="лист акта">`).join('')}</div>
+   <div class="card"><h2>Отправить в чат</h2>
+    <button class="btn" id="shPdf">Отправить PDF</button><div style="height:8px"></div>
+    <button class="btn sec" id="shImg">Отправить картинками</button><div style="height:8px"></div>
+    <button class="btn sec" id="shTxt">Отправить отчёт текстом</button>
+    <div class="hint">Откроется меню «Поделиться» — выберите МАКС или ВКонтакте и чат объекта. Текстовый отчёт содержит блок «Для заявки» — офис переносит его в заявку за один раз.</div></div>`;
+  $('#shPdf').onclick=()=>share([new File([makePDF(lastPages)],fname(acts,'pdf'),{type:'application/pdf'})],acts);
+  $('#shImg').onclick=async()=>{const files=[];for(let i=0;i<lastPages.length;i++){const b=await new Promise(r=>lastPages[i].toBlob(r,'image/jpeg',0.85));files.push(new File([b],fname(acts,'jpg').replace('.jpg',lastPages.length>1?` л${i+1}.jpg`:'.jpg'),{type:'image/jpeg'}))}share(files,acts)};
+  $('#shTxt').onclick=async()=>{const t=textReport(acts);if(navigator.share){try{await navigator.share({text:t});return}catch(e){if(e.name==='AbortError')return}}if(await copyText(t))toast('Отчёт скопирован — вставьте в чат');else prompt('Скопируйте отчёт:',t)};
+  bar(acts.length===1?`<button class="btn sec" id="bEdit">Исправить</button><button class="btn" id="bList">К списку</button>`:`<button class="btn" id="bList">К списку</button>`);
+  const be=$('#bEdit');if(be)be.onclick=()=>{cur=acts[0];go('edit')};$('#bList').onclick=()=>go('list');
 }
-async function share(files){
-  const a=cur,text=`Акт кв. ${a.kv} от ${fmtDate(a.date)} (${a.object}). Прошу подтвердить ответом.`;
-  try{ if(navigator.canShare&&navigator.canShare({files})){await navigator.share({files,text});return} }
-  catch(e){ if(e&&e.name==='AbortError')return }
-  files.forEach(f=>{const u=URL.createObjectURL(f);const l=document.createElement('a');l.href=u;l.download=f.name;document.body.appendChild(l);l.click();l.remove();setTimeout(()=>URL.revokeObjectURL(u),4000)});
-  toast('Файл сохранён — прикрепите его в чат МАКС');
+async function share(files,acts){
+  const text=acts.length>1?`Акт за ${fmtDate(acts[0].date)}, кв. ${acts.map(a=>a.kv).join(', ')}. Прошу подтвердить ответом.`:`Акт кв. ${acts[0].kv} от ${fmtDate(acts[0].date)} (${acts[0].object}). Прошу подтвердить ответом.`;
+  try{if(navigator.canShare&&navigator.canShare({files})){await navigator.share({files,text});return}}catch(e){if(e&&e.name==='AbortError')return}
+  files.forEach(f=>{const u=URL.createObjectURL(f);const l=document.createElement('a');l.href=u;l.download=f.name;document.body.appendChild(l);l.click();l.remove();setTimeout(()=>URL.revokeObjectURL(u),5000)});
+  toast('Файл сохранён — прикрепите его в чат');
 }
 
-render();
+/* ===== офис: перенос в заявку ===== */
+function parseRows(t){return t.split(/\r?\n/).map(l=>l.trim()).filter(l=>(l.match(/;/g)||[]).length===6).map(l=>l.split(';'))}
+function renderOffice(){
+  app.innerHTML=`<div class="card"><h2>Перенос в заявку</h2>
+   <div class="hint" style="margin:0 0 8px">Скопируйте из МАКС или ВКонтакте один или несколько текстовых отчётов целиком и вставьте сюда. Строки «Для заявки» найдутся сами.</div>
+   <textarea id="oIn" style="min-height:160px" placeholder="Вставьте отчёты сюда"></textarea>
+   <div id="oRes"></div></div>`;
+  const upd=()=>{const R=parseRows($('#oIn').value);$('#oRes').innerHTML=R.length?`<div class="hint">Найдено строк: <b>${R.length}</b></div>
+    <div style="overflow:auto;margin:8px 0"><table class="imp"><tr><th>Кв.</th><th>Вид</th><th>ОК</th><th>СП</th><th>Предмет</th><th>Размер</th><th>Кол-во</th></tr>${R.map(r=>`<tr>${r.map(c=>`<td>${esc(c)}</td>`).join('')}</tr>`).join('')}</table></div>
+    <button class="btn" id="oCp">Скопировать для Excel</button><div class="hint">В Excel встаньте в первую свободную строку колонки A листа ввода и нажмите Ctrl+V.</div>`:'<div class="hint">Строк для заявки пока не найдено.</div>';
+    const b=$('#oCp');if(b)b.onclick=async()=>{const ok=await copyText(R.map(r=>r.join('\t')).join('\n'));toast(ok?'Скопировано: '+R.length+' строк':'Не удалось скопировать')}};
+  $('#oIn').oninput=upd;upd();bar('');
+}
+
+render();loadCfg();
 </script>
 </body>
 </html>
