@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#1f4e79">
-<title>Акт по квартире</title>
+<title>Промежуточные акты</title>
 <style>
 :root{--bg:#f3f5f8;--card:#fff;--ink:#1b2430;--muted:#6b7686;--line:#d9dee6;--acc:#1f4e79;--acc2:#e8f0fa;--ok:#1d7a3e;--bad:#b42318;--warn:#fff4d6}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -65,7 +65,7 @@ table.imp{width:100%;border-collapse:collapse;font-size:13px}table.imp td,table.
 </style>
 </head>
 <body>
-<header><h1 id="ttl">Акты по квартирам</h1><button id="hdrBtn">Меню</button></header>
+<header><h1 id="ttl">Промежуточные акты</h1><button id="hdrBtn">Меню</button></header>
 <main id="app"></main>
 <div class="bar"><div class="in" id="barIn"></div></div>
 <input type="file" id="fileIn" accept="image/*" multiple style="display:none">
@@ -120,7 +120,7 @@ async function syncActs(acts,pdfBlob,name){
 let retrying=false;
 async function retryPending(){
   if(retrying||!ENDPOINT||!KEYV||!navigator.onLine)return;retrying=true;let n=0;
-  try{for(const a of DB.acts.filter(a=>a.pending)){const pg=await drawActs([a]);if(await syncActs([a],makePDF(pg),fname([a],'pdf')))n++}}finally{retrying=false}
+  try{for(const a of DB.acts.filter(a=>a.pending)){const pg=await drawActs([a]);if(await syncActs([a],await makePDF(pg),fname([a],'pdf')))n++}}finally{retrying=false}
   if(n){toast('Отправлено в офис актов: '+n);if(view==='list')renderList()}
 }
 window.addEventListener('online',retryPending);
@@ -138,8 +138,8 @@ async function phURL(id){if(urlCache[id])return urlCache[id];const b=await phGet
 async function compress(file){
   const bmp=await createImageBitmap(file).catch(()=>null); let w,h,src;
   if(bmp){w=bmp.width;h=bmp.height;src=bmp}else{src=await new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=URL.createObjectURL(file)});w=src.naturalWidth;h=src.naturalHeight}
-  const k=Math.min(1,1400/Math.max(w,h)); const c=document.createElement('canvas'); c.width=Math.round(w*k); c.height=Math.round(h*k);
-  c.getContext('2d').drawImage(src,0,0,c.width,c.height); return new Promise(r=>c.toBlob(r,'image/jpeg',0.72));
+  const k=Math.min(1,2000/Math.max(w,h)); const c=document.createElement('canvas'); c.width=Math.round(w*k); c.height=Math.round(h*k);
+  c.getContext('2d').drawImage(src,0,0,c.width,c.height); return new Promise(r=>c.toBlob(r,'image/jpeg',0.85));
 }
 function itemPhotos(a){const l=[];a.windows.forEach(w=>(w.photos||[]).forEach(p=>l.push(p.id)));a.rest.forEach(r=>(r.photos||[]).forEach(p=>l.push(p.id)));return l}
 
@@ -165,7 +165,7 @@ function workersStr(a){return (a.workers||[]).join(', ')}
 /* ===== навигация ===== */
 let view='list', cur=null, prevActs=null;
 function render(){
-  const titles={list:'Акты по квартирам',edit:'Кв. '+(cur&&cur.kv||'…'),settings:'Кто я',preview:'Готовый акт',office:'Перенос в заявку',menu:'Меню'};
+  const titles={list:'Промежуточные акты',edit:'Кв. '+(cur&&cur.kv||'…'),settings:'Кто я',preview:'Промежуточный акт',office:'Перенос в заявку',menu:'Меню'};
   $('#ttl').textContent=titles[view]||'';
   $('#hdrBtn').textContent=view==='list'?'Меню':'← Назад';
   ({list:renderList,edit:renderEdit,settings:renderSettings,preview:renderPreview,office:renderOffice,menu:renderMenu})[view]();
@@ -178,7 +178,7 @@ function renderMenu(){
   app.innerHTML=`<div class="card"><button class="btn sec" id="mMe">Кто я (выбрать себя)</button><div style="height:8px"></div>
    <button class="btn sec" id="mOff">Перенос в заявку (для офиса)</button><div style="height:8px"></div>
    <button class="btn sec" id="mCfg">Обновить списки объектов и работников</button></div>
-   <div class="card"><h2>Офис</h2><div class="hint">${KEYV&&ENDPOINT?'Подключено: сформированные акты сами уходят в журнал офиса и в заявку.':'Не подключено. Откройте ссылку, которую прислал офис.'}</div></div>
+   <div class="card"><h2>Офис</h2><div class="hint">${KEYV&&ENDPOINT?'Подключено: промежуточные акты сами уходят в журнал офиса и в текущую заявку объекта.':'Не подключено. Откройте ссылку, которую прислал офис.'}</div></div>
    <div class="card"><h2>Память телефона</h2><div class="hint">Акты и фото хранятся только на этом телефоне.</div>
    <div style="margin-top:8px"><button class="btn sec" id="mOld">Удалить акты старше 30 дней</button></div></div>`;
   $('#mMe').onclick=()=>go('settings'); $('#mOff').onclick=()=>go('office');
@@ -222,12 +222,12 @@ function renderList(){
     <div class="chips" style="margin-top:8px">${PERS.map(([k,l])=>`<button class="chip ${f.per===k?'on':''}" data-per="${k}">${l}</button>`).join('')}</div>
     ${f.per==='custom'?`<div class="row"><div><label>с</label><input type="date" id="lFrom" value="${f.from}"></div><div><label>по</label><input type="date" id="lTo" value="${f.to}"></div></div>`:''}
     <div class="hint">Найдено: ${F.length} кв. · ${fmtN(T.m2)} м² · ${T.def} деф.${fOn?' · <a href="#" id="lReset">сбросить фильтр</a>':''}</div>
-    ${F.length>1&&nDay>1&&nObj===1?`<div style="margin-top:8px"><button class="btn" id="lSum">Сводный акт за период (${F.length} кв.)</button></div>`:''}
+    ${F.length>1&&nDay>1&&nObj===1?`<div style="margin-top:8px"><button class="btn" id="lSum">Сводный промежуточный акт за период (${F.length} кв.)</button></div>`:''}
     ${F.length>1&&nDay>1&&nObj>1?'<div class="hint">Для сводного акта за период выберите один объект.</div>':''}</div>`:''}
    ${days.length?days.map(d=>{const L=by[d].sort((a,b)=>a.created-b.created);const t=totals(L);
      return `<div class="card"><div class="day"><b>${fmtDate(d)}</b><span class="muted" style="font-size:13px">${L.length} кв. · ${fmtN(t.m2)} м² · ${t.def} деф.</span></div>
      ${L.map(a=>{const tt=totals(a);return `<div class="it"><div class="m"><b>Кв. ${esc(a.kv||'—')}</b><div class="s">${esc(a.object||'объект не выбран')} · ${fmtN(tt.m2)} м² · ${tt.def} деф. · фото ${itemPhotos(a).length}${syncBadge(a)}</div></div><button class="btn small sec" data-open="${a.id}">Открыть</button></div>`}).join('')}
-     ${[...new Set(L.map(a=>a.object))].filter(o=>L.filter(a=>a.object===o).length>1).map(o=>`<div style="margin-top:8px"><button class="btn" data-day="${d}" data-obj="${esc(o)}">Общий акт за ${fmtDate(d)}${new Set(L.map(a=>a.object)).size>1?' · '+esc(o):''}</button></div>`).join('')}</div>`}).join('')
+     ${[...new Set(L.map(a=>a.object))].filter(o=>L.filter(a=>a.object===o).length>1).map(o=>`<div style="margin-top:8px"><button class="btn" data-day="${d}" data-obj="${esc(o)}">Общий промежуточный акт за ${fmtDate(d)}${new Set(L.map(a=>a.object)).size>1?' · '+esc(o):''}</button></div>`).join('')}</div>`}).join('')
    :`<div class="card muted">${DB.acts.length?'По фильтру ничего не найдено.':'Пока пусто. Нажмите «Новый акт».'}</div>`}`;
   const sv=()=>{save();renderList()};
   const lo=$('#lObj');if(lo)lo.onchange=()=>{f.obj=lo.value;sv()};
@@ -268,7 +268,7 @@ function renderEdit(){
   $('#addRest').onclick=pickItem;
   $('#delAct').onclick=async()=>{if(confirm('Удалить акт по кв. '+(a.kv||'')+' вместе с фото?')){for(const id of itemPhotos(a))await phDel(id);DB.acts=DB.acts.filter(x=>x.id!==a.id);save();go('list')}};
   bindWins();bindRest();bindPhotos();
-  bar(`<button class="btn" id="bMake">Сформировать акт</button>`);
+  bar(`<button class="btn" id="bMake">Сформировать промежуточный акт</button>`);
   $('#bMake').onclick=()=>{if(!a.kv){toast('Укажите квартиру');$('#fKv').focus();return}if(!a.object){toast('Выберите объект');return}prevActs=[a];go('preview')};
 }
 function photoRow(list,key){
@@ -351,14 +351,14 @@ async function drawActs(acts){
   const objs=[...new Set(acts.map(a=>a.object))], wks=[...new Set(acts.flatMap(a=>a.workers||[]))];
   const font=(px,w=400,col='#000')=>{g.font=`${w} ${px}px Roboto, Arial, sans-serif`;g.fillStyle=col};
   const newPage=()=>{const c=document.createElement('canvas');c.width=PW;c.height=PH;g=c.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,PW,PH);pages.push(c);y=MG;
-    if(pages.length>1){font(19,400,'#666');g.fillText((multi?(span?'Сводный акт за ':'Акт за ')+dstr:'Кв. '+acts[0].kv+' · '+fmtDate(acts[0].date))+' (продолжение)',MG,y);y+=34}};
+    if(pages.length>1){font(19,400,'#666');g.fillText((multi?(span?'Сводный промежуточный акт за ':'Промежуточный акт за ')+dstr:'Кв. '+acts[0].kv+' · '+fmtDate(acts[0].date))+' (продолжение)',MG,y);y+=34}};
   const need=h=>{if(y+h>PH-MG-30)newPage()};
   const text=(s,x,yy,px,w,col,al)=>{font(px,w,col);g.textAlign=al||'left';g.fillText(s,x,yy);g.textAlign='left'};
   const wrap=(s,x,maxW,lh)=>{let line='';for(const w of String(s).split(/\s+/)){const t=line?line+' '+w:w;if(g.measureText(t).width>maxW&&line){need(lh);g.fillText(line,x,y);y+=lh;line=w}else line=t}if(line){need(lh);g.fillText(line,x,y);y+=lh}};
   const fit=(s,maxW)=>{s=String(s);while(g.measureText(s).width>maxW&&s.length>1)s=s.slice(0,-1);return s};
   newPage();
-  text(span?'СВОДНЫЙ АКТ ВЫПОЛНЕННЫХ РАБОТ ЗА ПЕРИОД':multi?'АКТ ВЫПОЛНЕННЫХ РАБОТ ЗА ДЕНЬ':'АКТ ВЫПОЛНЕННЫХ РАБОТ ПО КВАРТИРЕ',PW/2,y+22,34,700,'#000','center');y+=56;
-  text('внутренний документ',PW/2,y,19,400,'#666','center');y+=40;
+  text(span?'СВОДНЫЙ ПРОМЕЖУТОЧНЫЙ АКТ ЗА ПЕРИОД':multi?'ПРОМЕЖУТОЧНЫЙ АКТ ЗА ДЕНЬ':'ПРОМЕЖУТОЧНЫЙ АКТ ПО КВАРТИРЕ',PW/2,y+22,34,700,'#000','center');y+=56;
+  text('внутренний документ подрядчика · не является актом выполненных работ',PW/2,y,19,400,'#666','center');y+=40;
   const info=[['Объект',objs.map(o=>o+(objAddr(o)?', '+objAddr(o):'')).join('; ')],[multi?'Квартиры':'Квартира / помещение',[...new Set(acts.map(a=>a.kv))].join(', ')],
     [span?'Период':'Дата',dstr+(!multi&&(acts[0].keysIn||acts[0].keysOut)?`     ключи: получены ${acts[0].keysIn||'—'}, сданы ${acts[0].keysOut||'—'}`:'')],['Исполнители',wks.join(', ')||'—']];
   for(const [k,v] of info){font(23,700);g.fillText(k+':',MG,y);const kw=g.measureText(k+': ').width;font(23);wrap(v||'—',MG+kw,PW-2*MG-kw,31);y+=3}
@@ -368,14 +368,15 @@ async function drawActs(acts){
     const row=(v,b,f)=>{need(rh);let x=MG;if(f){g.fillStyle='#eef1f5';g.fillRect(MG,y,cw.reduce((a,b)=>a+b),rh)}v.forEach((s,k)=>{g.strokeStyle='#000';g.lineWidth=1.5;g.strokeRect(x,y,cw[k],rh);font(20,b?700:400);g.fillText(fit(s,cw[k]-14),x+8,y+27);x+=cw[k]});y+=rh};
     row(hd,true,true);acts.forEach(a=>{const t=totals(a);row((span?[fmtDate(a.date)]:[]).concat(['Кв. '+a.kv,fmtN(t.m2),t.sp,t.def]))});const T=totals(acts);row((span?['ИТОГО','']:['ИТОГО']).concat([fmtN(T.m2),T.sp,T.def]),true,true);y+=26;
   }
-  const photoBlock=(list,x,w)=>{ // возвращает высоту и рисует
+  const photoBlock=(list,x,w)=>{ // рисует фото по 2 в ряд, сам переносит на новый лист
     const ph=list.map(p=>({p,im:imgs[p.id]})).filter(o=>o.im).sort((a,b)=>(a.p.tag==='до'?0:1)-(b.p.tag==='до'?0:1));
-    if(!ph.length)return 0;const cols=2,gap=14,cw=(w-gap)/cols,maxH=300;let yy=0,i=0;const startY=y;
-    while(i<ph.length){const rowItems=ph.slice(i,i+cols);const hs=rowItems.map(o=>Math.min(maxH,cw*o.im.height/o.im.width));const rh=Math.max(...hs)+30;
+    const cols=2,gap=14,cw=(w-gap)/cols,maxH=640;
+    for(let i=0;i<ph.length;i+=cols){const rowItems=ph.slice(i,i+cols);const rh=Math.max(...rowItems.map(o=>Math.min(maxH,cw*o.im.height/o.im.width)))+30;need(rh+gap);
       rowItems.forEach((o,k)=>{const iw=Math.min(cw,maxH*o.im.width/o.im.height),ih=iw*o.im.height/o.im.width,xx=x+k*(cw+gap);
-        font(18,700,o.p.tag==='до'?'#b42318':'#1d7a3e');g.fillText(o.p.tag.toUpperCase(),xx,startY+yy+18);g.drawImage(o.im,xx,startY+yy+26,iw,ih);g.strokeStyle='#999';g.lineWidth=1;g.strokeRect(xx,startY+yy+26,iw,ih)});
-      yy+=rh+gap;i+=cols}
-    return yy;
+        font(18,700,o.p.tag==='до'?'#b42318':'#1d7a3e');g.fillText(o.p.tag.toUpperCase(),xx,y+18);g.drawImage(o.im,xx,y+26,iw,ih);g.strokeStyle='#999';g.lineWidth=1;g.strokeRect(xx,y+26,iw,ih);
+        const pg=pages[pages.length-1];(pg.__ph=pg.__ph||[]).push({id:o.p.id,x:xx,y:y+26,w:iw,h:ih,pw:o.im.width,ph:o.im.height})});
+      y+=rh+gap}
+    return 0;
   };
   const photoH=(list,w)=>{const ph=list.map(p=>imgs[p.id]).filter(Boolean);if(!ph.length)return 0;const cw=(w-14)/2;let h=0;for(let i=0;i<ph.length;i+=2){h+=Math.max(...ph.slice(i,i+2).map(im=>Math.min(300,cw*im.height/im.width)))+30+14}return h};
   const winBox=(w,x,yy,bw,draw=true)=>{ // схема окна
@@ -395,15 +396,14 @@ async function drawActs(acts){
       const plain=a.windows.filter(w=>!(w.photos||[]).length),withPh=a.windows.filter(w=>(w.photos||[]).length);
       const cols=3,gap=22,bw=(PW-2*MG-gap*(cols-1))/cols;
       for(let i=0;i<plain.length;i+=cols){const grp=plain.slice(i,i+cols);const h=Math.max(...grp.map(w=>winBox(w,0,0,bw,false)));need(h);grp.forEach((w,k)=>winBox(w,MG+k*(bw+gap),y,bw));y+=h+gap}
-      for(const w of withPh){const bh=winBox(w,0,0,bw,false),pw=PW-2*MG-bw-gap,ph=photoH(w.photos,pw);need(Math.min(Math.max(bh,ph),PH-2*MG-60));
-        const y0=y;winBox(w,MG,y0,bw);const used=photoBlock(w.photos,MG+bw+gap,pw);y=y0+Math.max(bh,used)+gap}
+      for(const w of withPh){const bh=winBox(w,0,0,bw,false);need(bh+260);winBox(w,MG,y,bw);y+=bh+12;photoBlock(w.photos,MG,PW-2*MG);y+=gap}
     }
     if(a.rest.length){
       need(100);text('Реставрация',MG,y+8,26,700);text(`итого ${t.def} деф.`,PW-MG,y+8,20,400,'#444','right');y+=24;
       const cw=[56,190,520,170,176],hd=['№','Вид','Предмет','Где','Деф.'],rh=42;
       const row=(v,b,f)=>{need(rh);let x=MG;if(f){g.fillStyle='#eef1f5';g.fillRect(MG,y,cw.reduce((a,b)=>a+b),rh)}v.forEach((s,k)=>{g.strokeStyle='#000';g.lineWidth=1.5;g.strokeRect(x,y,cw[k],rh);font(19,b?700:400);g.fillText(fit(s,cw[k]-14),x+8,y+28);x+=cw[k]});y+=rh};
       row(hd,true,true);a.rest.forEach((r,i)=>row([i+1,kindOf(r.kind).short,itemLabel(r),r.ok?'ОК-'+r.ok:'',r.qty+((r.photos||[]).length?'  · фото':'')]));y+=18;
-      for(const [i,r] of a.rest.entries()){if(!(r.photos||[]).length)continue;const pw=PW-2*MG,ph=photoH(r.photos,pw);need(Math.min(ph+40,PH-2*MG-60));
+      for(const [i,r] of a.rest.entries()){if(!(r.photos||[]).length)continue;const pw=PW-2*MG;need(300);
         text(`${i+1}. ${kindOf(r.kind).short} · ${itemLabel(r)}${r.ok?' · ОК-'+r.ok:''}`,MG,y+20,20,700);y+=30;y+=photoBlock(r.photos,MG,pw)}
       y+=6;
     }
@@ -421,17 +421,26 @@ async function drawActs(acts){
 
 /* ===== PDF без библиотек ===== */
 function dataURLtoBytes(u){const b=atob(u.split(',')[1]);const a=new Uint8Array(b.length);for(let i=0;i<b.length;i++)a[i]=b.charCodeAt(i);return a}
-function makePDF(cvs){
+async function makePDF(cvs){
   const enc=new TextEncoder(),parts=[],offs=[];let len=0;const push=x=>{const b=typeof x==='string'?enc.encode(x):x;parts.push(b);len+=b.length};
-  const n=cvs.length,W=595.28,H=841.89;push('%PDF-1.4\n%\xE2\xE3\xCF\xD3\n');
+  const W=595.28,H=841.89,S=W/PW;let nid=3;const plan=[];
+  for(const cv of cvs){const ph=[];for(const p of (cv.__ph||[])){const b=await phGet(p.id);if(b&&/jpe?g/i.test(b.type||'image/jpeg'))ph.push({p,bytes:new Uint8Array(await b.arrayBuffer()),id:0})}
+    const pg={cv,pid:nid++,cid:nid++,iid:nid++,ph};ph.forEach(o=>{o.id=nid++});plan.push(pg)}
+  push('%PDF-1.4\n%\xE2\xE3\xCF\xD3\n');
   const obj=(id,body)=>{offs[id]=len;push(id+' 0 obj\n');body();push('\nendobj\n')};
-  obj(1,()=>push('<< /Type /Catalog /Pages 2 0 R >>'));const kids=[];for(let i=0;i<n;i++)kids.push((3+i*3)+' 0 R');
-  obj(2,()=>push(`<< /Type /Pages /Count ${n} /Kids [${kids.join(' ')}] >>`));
-  cvs.forEach((cv,i)=>{const pid=3+i*3,cid=pid+1,iid=pid+2,jpg=dataURLtoBytes(cv.toDataURL('image/jpeg',0.85));
-    obj(pid,()=>push(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${W} ${H}] /Resources << /XObject << /Im0 ${iid} 0 R >> >> /Contents ${cid} 0 R >>`));
-    const cs=`q ${W} 0 0 ${H} 0 0 cm /Im0 Do Q`;obj(cid,()=>push(`<< /Length ${cs.length} >>\nstream\n${cs}\nendstream`));
-    obj(iid,()=>{push(`<< /Type /XObject /Subtype /Image /Width ${cv.width} /Height ${cv.height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${jpg.length} >>\nstream\n`);push(jpg);push('\nendstream')})});
-  const total=3+n*3,xref=len;let x=`xref\n0 ${total}\n0000000000 65535 f \n`;for(let i=1;i<total;i++)x+=String(offs[i]).padStart(10,'0')+' 00000 n \n';
+  const img=(id,w,h,bytes)=>obj(id,()=>{push(`<< /Type /XObject /Subtype /Image /Width ${w} /Height ${h} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${bytes.length} >>\nstream\n`);push(bytes);push('\nendstream')});
+  obj(1,()=>push('<< /Type /Catalog /Pages 2 0 R >>'));
+  obj(2,()=>push(`<< /Type /Pages /Count ${plan.length} /Kids [${plan.map(p=>p.pid+' 0 R').join(' ')}] >>`));
+  for(const pg of plan){const jpg=dataURLtoBytes(pg.cv.toDataURL('image/jpeg',0.85));
+    const xo=['/Im0 '+pg.iid+' 0 R'].concat(pg.ph.map((o,k)=>'/P'+k+' '+o.id+' 0 R')).join(' ');
+    obj(pg.pid,()=>push(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${W} ${H}] /Resources << /XObject << ${xo} >> >> /Contents ${pg.cid} 0 R >>`));
+    let cs=`q ${W} 0 0 ${H} 0 0 cm /Im0 Do Q`;
+    pg.ph.forEach((o,k)=>{const p=o.p;cs+=`\nq ${(p.w*S).toFixed(2)} 0 0 ${(p.h*S).toFixed(2)} ${(p.x*S).toFixed(2)} ${(H-(p.y+p.h)*S).toFixed(2)} cm /P${k} Do Q`});
+    obj(pg.cid,()=>push(`<< /Length ${cs.length} >>\nstream\n${cs}\nendstream`));
+    img(pg.iid,pg.cv.width,pg.cv.height,jpg);
+    pg.ph.forEach(o=>img(o.id,o.p.pw,o.p.ph,o.bytes));
+  }
+  const total=nid,xref=len;let x=`xref\n0 ${total}\n0000000000 65535 f \n`;for(let i=1;i<total;i++)x+=String(offs[i]).padStart(10,'0')+' 00000 n \n';
   push(x+`trailer\n<< /Size ${total} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF`);return new Blob(parts,{type:'application/pdf'});
 }
 
@@ -441,7 +450,7 @@ function dataRows(acts){const out=[];acts.forEach(a=>{
   a.rest.forEach(r=>out.push([a.kv,r.kind,r.ok||'','',r.item+(r.num?' '+r.num:''),'',r.qty]))});return out}
 function textReport(acts){
   const T=totals(acts),objs=[...new Set(acts.map(a=>a.object))],wks=[...new Set(acts.flatMap(a=>a.workers||[]))];
-  const sp=actDates(acts).length>1;let s=`${sp?'Сводный акт за ':acts.length>1?'Акт за день ':'Акт '}${dspan(acts)} — ${objs.join('; ')}\nИсполнители: ${wks.join(', ')||'—'}\n`;
+  const sp=actDates(acts).length>1;let s=`${sp?'Сводный промежуточный акт за ':acts.length>1?'Промежуточный акт за день ':'Промежуточный акт '}${dspan(acts)} — ${objs.join('; ')}\nИсполнители: ${wks.join(', ')||'—'}\n`;
   acts.forEach(a=>{const t=totals(a);const ws=a.windows.map(w=>{const p=w.panes.map((p,j)=>p.mark&&p.mark!=='×'?`${j+1}СП${p.mark}${num(p.m2)?' '+fmtN(num(p.m2)):''}`:'').filter(Boolean);return p.length?winLabel(w)+': '+p.join(', '):''}).filter(Boolean);
     const rs=a.rest.map(r=>`${kindOf(r.kind).short} ${itemLabel(r)}${r.ok?' ОК-'+r.ok:''} — ${r.qty}`);
     s+=`\n${sp?fmtDate(a.date)+' ':''}Кв. ${a.kv}: шлифовка ${fmtN(t.m2)} м²${ws.length?' ('+ws.join('; ')+')':''}${rs.length?'; реставрация '+t.def+' деф. ('+rs.join('; ')+')':''}${a.note?'. Прим.: '+a.note:''}`});
@@ -452,29 +461,32 @@ async function copyText(t){try{await navigator.clipboard.writeText(t);return tru
 
 /* ===== экран готового акта ===== */
 let lastPages=[];
-const fname=(acts,ext)=>(acts.length>1?`${actDates(acts).length>1?'Сводный акт':'Акт за день'} ${dspan(acts)}`:`Акт кв ${String(acts[0].kv).replace(/[\\/:*?"<>|]/g,'-')} ${fmtDate(acts[0].date)}`)+'.'+ext;
+const fname=(acts,ext)=>(acts.length>1?`${actDates(acts).length>1?'Сводный промежуточный акт':'Промежуточный акт за день'} ${dspan(acts)}`:`Промежуточный акт кв ${String(acts[0].kv).replace(/[\\/:*?"<>|]/g,'-')} ${fmtDate(acts[0].date)}`)+'.'+ext;
 async function renderPreview(){
   const acts=prevActs;app.innerHTML='<div class="card muted">Собираю акт…</div>';bar('');
-  lastPages=await drawActs(acts);const t=totals(acts);
+  lastPages=await drawActs(acts);const t=totals(acts);const lastPdf=await makePDF(lastPages);
+  const imgFiles=[];for(let i=0;i<lastPages.length;i++){const b=await new Promise(r=>lastPages[i].toBlob(r,'image/jpeg',0.85));imgFiles.push(new File([b],fname(acts,'jpg').replace('.jpg',lastPages.length>1?` л${i+1}.jpg`:'.jpg'),{type:'image/jpeg'}))}
+  for(const a of acts){const add=async(list,lab)=>{for(const p of (list||[])){const b=await phGet(p.id);if(b)imgFiles.push(new File([b],`Фото кв ${String(a.kv).replace(/[\\/:*?"<>|]/g,'-')} ${lab} ${p.tag} ${imgFiles.length}.jpg`,{type:'image/jpeg'}))}};
+    for(const w of a.windows)await add(w.photos,winLabel(w));for(const r of a.rest)await add(r.photos,itemLabel(r).replace(/[\\/:*?"<>|]/g,'-'))}
   app.innerHTML=`${t.warn?`<div class="warn">У ${t.warn} отмеченных СП нет площади — они не попадут в строки для заявки.</div>`:''}
    <div class="card prev">${lastPages.map(p=>`<img src="${p.toDataURL('image/jpeg',0.8)}" alt="лист акта">`).join('')}</div>
    <div class="card"><div id="syncSt" class="hint" style="margin:0 0 10px;font-size:14px"></div><h2>Отправить в чат</h2>
     <button class="btn" id="shPdf">Отправить PDF</button><div style="height:8px"></div>
-    <button class="btn sec" id="shImg">Отправить картинками</button><div style="height:8px"></div>
+    <button class="btn sec" id="shImg">Отправить картинками (листы + фото)</button><div style="height:8px"></div>
     <button class="btn sec" id="shTxt">Отправить отчёт текстом</button>
     <div class="hint">Откроется меню «Поделиться» — выберите МАКС или ВКонтакте и чат объекта. Текстовый отчёт содержит блок «Для заявки» — офис переносит его в заявку за один раз.</div></div>`;
   {const st=$('#syncSt'),need=acts.filter(a=>a.sentSig!==sig(a));
    if(!KEYV||!ENDPOINT)st.textContent='Офис не подключён — акт не попадёт в журнал. Откройте ссылку от офиса.';
    else if(!need.length)st.textContent='✓ Уже в журнале офиса';
-   else{st.textContent='Отправляю в журнал офиса…';syncActs(acts,makePDF(lastPages),fname(acts,'pdf')).then(ok=>{const e=$('#syncSt');if(e)e.textContent=ok?'✓ Отправлено в журнал офиса':'Нет интернета — акт отправится в офис сам, когда связь появится'})}}
-  $('#shPdf').onclick=()=>share([new File([makePDF(lastPages)],fname(acts,'pdf'),{type:'application/pdf'})],acts);
-  $('#shImg').onclick=async()=>{const files=[];for(let i=0;i<lastPages.length;i++){const b=await new Promise(r=>lastPages[i].toBlob(r,'image/jpeg',0.85));files.push(new File([b],fname(acts,'jpg').replace('.jpg',lastPages.length>1?` л${i+1}.jpg`:'.jpg'),{type:'image/jpeg'}))}share(files,acts)};
+   else{st.textContent='Отправляю в журнал офиса…';syncActs(acts,lastPdf,fname(acts,'pdf')).then(ok=>{const e=$('#syncSt');if(e)e.textContent=ok?'✓ Отправлено в журнал офиса':'Нет интернета — акт отправится в офис сам, когда связь появится'})}}
+  $('#shPdf').onclick=()=>share([new File([lastPdf],fname(acts,'pdf'),{type:'application/pdf'})],acts);
+  $('#shImg').onclick=()=>share(imgFiles,acts);
   $('#shTxt').onclick=async()=>{const t=textReport(acts);if(navigator.share){try{await navigator.share({text:t});return}catch(e){if(e.name==='AbortError')return}}if(await copyText(t))toast('Отчёт скопирован — вставьте в чат');else prompt('Скопируйте отчёт:',t)};
   bar(acts.length===1?`<button class="btn sec" id="bEdit">Исправить</button><button class="btn" id="bList">К списку</button>`:`<button class="btn" id="bList">К списку</button>`);
   const be=$('#bEdit');if(be)be.onclick=()=>{cur=acts[0];go('edit')};$('#bList').onclick=()=>go('list');
 }
 async function share(files,acts){
-  const text=acts.length>1?`${actDates(acts).length>1?'Сводный акт':'Акт'} за ${dspan(acts)} (${acts[0].object}), кв. ${[...new Set(acts.map(a=>a.kv))].join(', ')}. Прошу подтвердить ответом.`:`Акт кв. ${acts[0].kv} от ${fmtDate(acts[0].date)} (${acts[0].object}). Прошу подтвердить ответом.`;
+  const text=acts.length>1?`${actDates(acts).length>1?'Сводный промежуточный акт':'Промежуточный акт'} за ${dspan(acts)} (${acts[0].object}), кв. ${[...new Set(acts.map(a=>a.kv))].join(', ')}. Прошу подтвердить ответом.`:`Промежуточный акт кв. ${acts[0].kv} от ${fmtDate(acts[0].date)} (${acts[0].object}). Прошу подтвердить ответом.`;
   try{if(navigator.canShare&&navigator.canShare({files})){await navigator.share({files,text});return}}catch(e){if(e&&e.name==='AbortError')return}
   files.forEach(f=>{const u=URL.createObjectURL(f);const l=document.createElement('a');l.href=u;l.download=f.name;document.body.appendChild(l);l.click();l.remove();setTimeout(()=>URL.revokeObjectURL(u),5000)});
   toast('Файл сохранён — прикрепите его в чат');
