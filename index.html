@@ -94,7 +94,39 @@ DB.acts.forEach(a=>{a.workers=toArr(a.workers);a.windows.forEach(w=>w.photos=w.p
 let CFG={objects:[],workers:[]};
 try{const s=localStorage.getItem(CKEY); if(s) CFG=Object.assign(CFG,JSON.parse(s))}catch(e){}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(DB))}catch(e){toast('Память телефона заполнена — удалите старые акты')}}
-async function loadCfg(){try{const r=await fetch('config.json?'+Date.now(),{cache:'no-store'}); if(r.ok){const c=await r.json(); CFG=Object.assign({objects:[],workers:[]},c); try{localStorage.setItem(CKEY,JSON.stringify(CFG))}catch(e){} render()}}catch(e){}}
+/* ===== связь с офисом (Google) ===== */
+let ENDPOINT='',KEYV='';
+try{KEYV=localStorage.getItem('akt-key')||'';ENDPOINT=localStorage.getItem('akt-ep')||''}catch(e){}
+(function(){const m=location.hash.match(/k=([\w-]+)/);if(m){KEYV=m[1];try{localStorage.setItem('akt-key',KEYV)}catch(e){}history.replaceState(null,'',location.pathname)}})();
+async function loadCfg(){
+  try{const r=await fetch('config.json?'+Date.now(),{cache:'no-store'});if(r.ok){const c=await r.json();if(c.endpoint){ENDPOINT=c.endpoint;try{localStorage.setItem('akt-ep',ENDPOINT)}catch(e){}}else if(c.objects)CFG=Object.assign({objects:[],workers:[]},c)}}catch(e){}
+  if(ENDPOINT&&KEYV){try{const c=await (await fetch(ENDPOINT+'?cfg=1&k='+encodeURIComponent(KEYV))).json();
+    if(c.ok)CFG={objects:c.objects||[],workers:c.workers||[]};else if(c.error==='key')toast('Ключ офиса не подходит — попросите новую ссылку')}catch(e){}}
+  try{localStorage.setItem(CKEY,JSON.stringify(CFG))}catch(e){}
+  if(view!=='edit')render(); retryPending();
+}
+const sig=a=>JSON.stringify([a.object,a.kv,a.date,a.workers,a.note,a.windows.map(w=>[w.type,w.ok,w.size,w.panes,(w.photos||[]).length]),a.rest.map(r=>[r.kind,r.item,r.num,r.ok,r.qty,(r.photos||[]).length])]);
+const b64=blob=>new Promise(res=>{const fr=new FileReader();fr.onload=()=>res(String(fr.result).split(',')[1]);fr.readAsDataURL(blob)});
+async function syncActs(acts,pdfBlob,name){
+  if(!ENDPOINT||!KEYV)return false;
+  const payload={k:KEYV,acts:acts.map(a=>{const t=totals(a);return {id:a.id,object:a.object,kv:a.kv,date:a.date,workers:a.workers||[],note:a.note||'',
+    totals:{m2:Math.round(t.m2*100)/100,sp:t.sp,def:t.def},rows:dataRows([a])}}),pdf:pdfBlob?{name:name,b64:await b64(pdfBlob)}:null};
+  try{const j=await (await fetch(ENDPOINT,{method:'POST',body:JSON.stringify(payload)})).json();
+    if(j.ok){acts.forEach(a=>{a.sentSig=sig(a);a.pending=false;a.sentAt=Date.now()});save();return true}
+    if(j.error==='key')toast('Ключ офиса не подходит — попросите новую ссылку');
+  }catch(e){}
+  acts.forEach(a=>{a.pending=true});save();return false;
+}
+let retrying=false;
+async function retryPending(){
+  if(retrying||!ENDPOINT||!KEYV||!navigator.onLine)return;retrying=true;let n=0;
+  try{for(const a of DB.acts.filter(a=>a.pending)){const pg=await drawActs([a]);if(await syncActs([a],makePDF(pg),fname([a],'pdf')))n++}}finally{retrying=false}
+  if(n){toast('Отправлено в офис актов: '+n);if(view==='list')renderList()}
+}
+window.addEventListener('online',retryPending);
+function syncBadge(a){if(a.sentSig&&a.sentSig===sig(a))return ' · <span style="color:var(--ok)">✓ в офисе</span>';
+  if(a.sentSig)return ' · <span style="color:var(--bad)">изменён — сформируйте акт заново</span>';
+  if(a.pending)return ' · <span style="color:var(--bad)">ждёт интернета</span>';return ''}
 // фото — IndexedDB
 let idb=null;
 function idbOpen(){return idb||(idb=new Promise((res,rej)=>{const r=indexedDB.open('akt-photos',1);r.onupgradeneeded=()=>r.result.createObjectStore('ph');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)}))}
@@ -146,6 +178,7 @@ function renderMenu(){
   app.innerHTML=`<div class="card"><button class="btn sec" id="mMe">Кто я (выбрать себя)</button><div style="height:8px"></div>
    <button class="btn sec" id="mOff">Перенос в заявку (для офиса)</button><div style="height:8px"></div>
    <button class="btn sec" id="mCfg">Обновить списки объектов и работников</button></div>
+   <div class="card"><h2>Офис</h2><div class="hint">${KEYV&&ENDPOINT?'Подключено: сформированные акты сами уходят в журнал офиса и в заявку.':'Не подключено. Откройте ссылку, которую прислал офис.'}</div></div>
    <div class="card"><h2>Память телефона</h2><div class="hint">Акты и фото хранятся только на этом телефоне.</div>
    <div style="margin-top:8px"><button class="btn sec" id="mOld">Удалить акты старше 30 дней</button></div></div>`;
   $('#mMe').onclick=()=>go('settings'); $('#mOff').onclick=()=>go('office');
@@ -183,7 +216,7 @@ function renderList(){
   const by={}; F.forEach(a=>{(by[a.date]=by[a.date]||[]).push(a)});
   const days=Object.keys(by).sort().reverse();
   const T=totals(F),fOn=f.obj||f.wk||f.per!=='all',nObj=new Set(F.map(a=>a.object)).size,nDay=days.length;
-  app.innerHTML=`${!DB.settings.me.length?'<div class="warn">Сначала выберите себя: «Меню → Кто я».</div>':''}
+  app.innerHTML=`${!KEYV?'<div class="warn">Офис не подключён: откройте ссылку, которую прислал офис.</div>':''}${!DB.settings.me.length?'<div class="warn">Сначала выберите себя: «Меню → Кто я».</div>':''}
    ${DB.acts.length?`<div class="card"><div class="row" style="flex-wrap:wrap"><select id="lObj" style="flex-basis:100%"><option value="">Все объекты</option>${objsAll.map(o=>`<option ${o===f.obj?'selected':''} value="${esc(o)}">${esc(o)}</option>`).join('')}</select>
     <select id="lWk" style="flex-basis:100%"><option value="">Все работники</option>${wksAll.map(w=>`<option ${w===f.wk?'selected':''} value="${esc(w)}">${esc(w)}</option>`).join('')}</select></div>
     <div class="chips" style="margin-top:8px">${PERS.map(([k,l])=>`<button class="chip ${f.per===k?'on':''}" data-per="${k}">${l}</button>`).join('')}</div>
@@ -193,7 +226,7 @@ function renderList(){
     ${F.length>1&&nDay>1&&nObj>1?'<div class="hint">Для сводного акта за период выберите один объект.</div>':''}</div>`:''}
    ${days.length?days.map(d=>{const L=by[d].sort((a,b)=>a.created-b.created);const t=totals(L);
      return `<div class="card"><div class="day"><b>${fmtDate(d)}</b><span class="muted" style="font-size:13px">${L.length} кв. · ${fmtN(t.m2)} м² · ${t.def} деф.</span></div>
-     ${L.map(a=>{const tt=totals(a);return `<div class="it"><div class="m"><b>Кв. ${esc(a.kv||'—')}</b><div class="s">${esc(a.object||'объект не выбран')} · ${fmtN(tt.m2)} м² · ${tt.def} деф. · фото ${itemPhotos(a).length}</div></div><button class="btn small sec" data-open="${a.id}">Открыть</button></div>`}).join('')}
+     ${L.map(a=>{const tt=totals(a);return `<div class="it"><div class="m"><b>Кв. ${esc(a.kv||'—')}</b><div class="s">${esc(a.object||'объект не выбран')} · ${fmtN(tt.m2)} м² · ${tt.def} деф. · фото ${itemPhotos(a).length}${syncBadge(a)}</div></div><button class="btn small sec" data-open="${a.id}">Открыть</button></div>`}).join('')}
      ${[...new Set(L.map(a=>a.object))].filter(o=>L.filter(a=>a.object===o).length>1).map(o=>`<div style="margin-top:8px"><button class="btn" data-day="${d}" data-obj="${esc(o)}">Общий акт за ${fmtDate(d)}${new Set(L.map(a=>a.object)).size>1?' · '+esc(o):''}</button></div>`).join('')}</div>`}).join('')
    :`<div class="card muted">${DB.acts.length?'По фильтру ничего не найдено.':'Пока пусто. Нажмите «Новый акт».'}</div>`}`;
   const sv=()=>{save();renderList()};
@@ -425,11 +458,15 @@ async function renderPreview(){
   lastPages=await drawActs(acts);const t=totals(acts);
   app.innerHTML=`${t.warn?`<div class="warn">У ${t.warn} отмеченных СП нет площади — они не попадут в строки для заявки.</div>`:''}
    <div class="card prev">${lastPages.map(p=>`<img src="${p.toDataURL('image/jpeg',0.8)}" alt="лист акта">`).join('')}</div>
-   <div class="card"><h2>Отправить в чат</h2>
+   <div class="card"><div id="syncSt" class="hint" style="margin:0 0 10px;font-size:14px"></div><h2>Отправить в чат</h2>
     <button class="btn" id="shPdf">Отправить PDF</button><div style="height:8px"></div>
     <button class="btn sec" id="shImg">Отправить картинками</button><div style="height:8px"></div>
     <button class="btn sec" id="shTxt">Отправить отчёт текстом</button>
     <div class="hint">Откроется меню «Поделиться» — выберите МАКС или ВКонтакте и чат объекта. Текстовый отчёт содержит блок «Для заявки» — офис переносит его в заявку за один раз.</div></div>`;
+  {const st=$('#syncSt'),need=acts.filter(a=>a.sentSig!==sig(a));
+   if(!KEYV||!ENDPOINT)st.textContent='Офис не подключён — акт не попадёт в журнал. Откройте ссылку от офиса.';
+   else if(!need.length)st.textContent='✓ Уже в журнале офиса';
+   else{st.textContent='Отправляю в журнал офиса…';syncActs(acts,makePDF(lastPages),fname(acts,'pdf')).then(ok=>{const e=$('#syncSt');if(e)e.textContent=ok?'✓ Отправлено в журнал офиса':'Нет интернета — акт отправится в офис сам, когда связь появится'})}}
   $('#shPdf').onclick=()=>share([new File([makePDF(lastPages)],fname(acts,'pdf'),{type:'application/pdf'})],acts);
   $('#shImg').onclick=async()=>{const files=[];for(let i=0;i<lastPages.length;i++){const b=await new Promise(r=>lastPages[i].toBlob(r,'image/jpeg',0.85));files.push(new File([b],fname(acts,'jpg').replace('.jpg',lastPages.length>1?` л${i+1}.jpg`:'.jpg'),{type:'image/jpeg'}))}share(files,acts)};
   $('#shTxt').onclick=async()=>{const t=textReport(acts);if(navigator.share){try{await navigator.share({text:t});return}catch(e){if(e.name==='AbortError')return}}if(await copyText(t))toast('Отчёт скопирован — вставьте в чат');else prompt('Скопируйте отчёт:',t)};
