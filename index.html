@@ -180,7 +180,9 @@ function renderMenu(){
    <button class="btn sec" id="mCfg">Обновить списки объектов и работников</button></div>
    <div class="card"><h2>Офис</h2><div class="hint">${KEYV&&ENDPOINT?'Подключено: промежуточные акты сами уходят в журнал офиса и в текущую заявку объекта.':'Не подключено. Откройте ссылку, которую прислал офис.'}</div></div>
    <div class="card"><h2>Память телефона</h2><div class="hint">Акты и фото хранятся только на этом телефоне.</div>
-   <div style="margin-top:8px"><button class="btn sec" id="mOld">Удалить акты старше 30 дней</button></div></div>`;
+   <div style="margin-top:8px"><button class="btn sec" id="mOld">Удалить акты старше 30 дней</button></div>
+   <div style="margin-top:8px"><button class="btn sec" id="mAll" style="color:var(--bad)">Удалить все акты на этом телефоне</button></div></div>`;
+  $('#mAll').onclick=async()=>{if(!confirm('Удалить ВСЕ промежуточные акты и фото с этого телефона? В журнале офиса они останутся.'))return;for(const a of DB.acts)for(const id of itemPhotos(a))await phDel(id);DB.acts=[];save();toast('Все акты удалены с телефона')};
   $('#mMe').onclick=()=>go('settings'); $('#mOff').onclick=()=>go('office');
   $('#mCfg').onclick=async()=>{await loadCfg();toast('Объектов: '+CFG.objects.length+', работников: '+CFG.workers.length)};
   $('#mOld').onclick=async()=>{const lim=Date.now()-30*864e5;const old=DB.acts.filter(a=>a.created<lim);for(const a of old)for(const id of itemPhotos(a))await phDel(id);DB.acts=DB.acts.filter(a=>a.created>=lim);save();toast('Удалено актов: '+old.length)};
@@ -370,7 +372,7 @@ async function drawActs(acts){
   }
   const photoBlock=(list,x,w)=>{ // рисует фото по 2 в ряд, сам переносит на новый лист
     const ph=list.map(p=>({p,im:imgs[p.id]})).filter(o=>o.im).sort((a,b)=>(a.p.tag==='до'?0:1)-(b.p.tag==='до'?0:1));
-    const cols=2,gap=14,cw=(w-gap)/cols,maxH=640;
+    const cols=2,gap=14,cw=(w-gap)/cols,maxH=560;
     for(let i=0;i<ph.length;i+=cols){const rowItems=ph.slice(i,i+cols);const rh=Math.max(...rowItems.map(o=>Math.min(maxH,cw*o.im.height/o.im.width)))+30;need(rh+gap);
       rowItems.forEach((o,k)=>{const iw=Math.min(cw,maxH*o.im.width/o.im.height),ih=iw*o.im.height/o.im.width,xx=x+k*(cw+gap);
         font(18,700,o.p.tag==='до'?'#b42318':'#1d7a3e');g.fillText(o.p.tag.toUpperCase(),xx,y+18);g.drawImage(o.im,xx,y+26,iw,ih);g.strokeStyle='#999';g.lineWidth=1;g.strokeRect(xx,y+26,iw,ih);
@@ -379,6 +381,7 @@ async function drawActs(acts){
     return 0;
   };
   const photoH=(list,w)=>{const ph=list.map(p=>imgs[p.id]).filter(Boolean);if(!ph.length)return 0;const cw=(w-14)/2;let h=0;for(let i=0;i<ph.length;i+=2){h+=Math.max(...ph.slice(i,i+2).map(im=>Math.min(300,cw*im.height/im.width)))+30+14}return h};
+  const row1H=(list,w)=>{const ims=(list||[]).map(p=>imgs[p.id]).filter(Boolean).slice(0,2);if(!ims.length)return 0;const cw=(w-14)/2;return Math.max(...ims.map(im=>Math.min(560,cw*im.height/im.width)))+44};
   const winBox=(w,x,yy,bw,draw=true)=>{ // схема окна
     const n=w.panes.length,per=n<=4?n:Math.ceil(n/2),rows=Math.ceil(n/per),ph=100,bh=56+rows*ph+(w.size?28:0)+34;if(!draw)return bh;
     g.strokeStyle='#000';g.lineWidth=2;g.strokeRect(x,yy,bw,bh);text(winLabel(w),x+12,yy+31,23,700);text(n+' СП',x+bw-12,yy+31,18,400,'#555','right');
@@ -396,14 +399,14 @@ async function drawActs(acts){
       const plain=a.windows.filter(w=>!(w.photos||[]).length),withPh=a.windows.filter(w=>(w.photos||[]).length);
       const cols=3,gap=22,bw=(PW-2*MG-gap*(cols-1))/cols;
       for(let i=0;i<plain.length;i+=cols){const grp=plain.slice(i,i+cols);const h=Math.max(...grp.map(w=>winBox(w,0,0,bw,false)));need(h);grp.forEach((w,k)=>winBox(w,MG+k*(bw+gap),y,bw));y+=h+gap}
-      for(const w of withPh){const bh=winBox(w,0,0,bw,false);need(bh+260);winBox(w,MG,y,bw);y+=bh+12;photoBlock(w.photos,MG,PW-2*MG);y+=gap}
+      for(const w of withPh){const bh=winBox(w,0,0,bw,false);need(bh+12+row1H(w.photos,PW-2*MG));winBox(w,MG,y,bw);y+=bh+12;photoBlock(w.photos,MG,PW-2*MG);y+=gap}
     }
     if(a.rest.length){
       need(100);text('Реставрация',MG,y+8,26,700);text(`итого ${t.def} деф.`,PW-MG,y+8,20,400,'#444','right');y+=24;
       const cw=[56,190,520,170,176],hd=['№','Вид','Предмет','Где','Деф.'],rh=42;
       const row=(v,b,f)=>{need(rh);let x=MG;if(f){g.fillStyle='#eef1f5';g.fillRect(MG,y,cw.reduce((a,b)=>a+b),rh)}v.forEach((s,k)=>{g.strokeStyle='#000';g.lineWidth=1.5;g.strokeRect(x,y,cw[k],rh);font(19,b?700:400);g.fillText(fit(s,cw[k]-14),x+8,y+28);x+=cw[k]});y+=rh};
       row(hd,true,true);a.rest.forEach((r,i)=>row([i+1,kindOf(r.kind).short,itemLabel(r),r.ok?'ОК-'+r.ok:'',r.qty+((r.photos||[]).length?'  · фото':'')]));y+=18;
-      for(const [i,r] of a.rest.entries()){if(!(r.photos||[]).length)continue;const pw=PW-2*MG;need(300);
+      for(const [i,r] of a.rest.entries()){if(!(r.photos||[]).length)continue;const pw=PW-2*MG;need(30+row1H(r.photos,pw));
         text(`${i+1}. ${kindOf(r.kind).short} · ${itemLabel(r)}${r.ok?' · ОК-'+r.ok:''}`,MG,y+20,20,700);y+=30;y+=photoBlock(r.photos,MG,pw)}
       y+=6;
     }
@@ -507,6 +510,7 @@ function renderOffice(){
 }
 
 render();loadCfg();
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
 </body>
 </html>
