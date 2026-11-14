@@ -126,6 +126,8 @@ function itemLabel(r){const ab=ABBR[r.item];let s=r.item;if(r.num)s+=ab?(' '+ab+
 const kindOf=c=>KINDS.find(k=>k.code===c)||{short:'?'};
 function totals(list){let m2=0,sp=0,warn=0,def=0;(Array.isArray(list)?list:[list]).forEach(a=>{
   a.windows.forEach(w=>w.panes.forEach(p=>{const v=num(p.m2);if(p.mark&&p.mark!=='×'){sp++;if(!v)warn++}m2+=v}));a.rest.forEach(r=>def+=num(r.qty))});return {m2,sp,warn,def}}
+const actDates=acts=>[...new Set(acts.map(a=>a.date))].sort();
+const dspan=acts=>{const d=actDates(acts);return d.length>1?fmtDate(d[0])+' – '+fmtDate(d[d.length-1]):fmtDate(d[0])};
 function workersStr(a){return (a.workers||[]).join(', ')}
 
 /* ===== навигация ===== */
@@ -168,15 +170,40 @@ function objSelect(val,id){
   return `<select id="${id}"><option value="">— выберите объект —</option>${CFG.objects.map(o=>`<option ${o.name===val?'selected':''} value="${esc(o.name)}">${esc(o.name)}</option>`).join('')}</select>${val?`<div class="hint">${esc(objAddr(val))}</div>`:''}`;
 }
 
+const iso=x=>{const d=new Date(x);d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,10)};
+const PERS=[['all','Всё'],['today','Сегодня'],['week','Эта неделя'],['pweek','Прошлая неделя'],['month','Этот месяц'],['custom','Период…']];
+function periodRange(f){const t=today(),d=new Date(t+'T00:00:00'),wd=(d.getDay()+6)%7,sh=n=>{const x=new Date(d);x.setDate(x.getDate()+n);return iso(x)};
+  switch(f.per){case 'today':return [t,t];case 'week':return [sh(-wd),t];case 'pweek':return [sh(-wd-7),sh(-wd-1)];case 'month':return [t.slice(0,8)+'01',t];case 'custom':return [f.from||'',f.to||''];default:return ['','']}}
 function renderList(){
-  const by={}; DB.acts.forEach(a=>{(by[a.date]=by[a.date]||[]).push(a)});
+  const f=DB.settings.flt=Object.assign({obj:'',wk:'',per:'all',from:'',to:''},DB.settings.flt||{});
+  const [from,to]=periodRange(f);
+  const objsAll=[...new Set([...CFG.objects.map(o=>o.name),...DB.acts.map(a=>a.object).filter(Boolean)])];
+  const wksAll=[...new Set([...CFG.workers,...DB.acts.flatMap(a=>a.workers||[])])];
+  const F=DB.acts.filter(a=>(!f.obj||a.object===f.obj)&&(!f.wk||(a.workers||[]).includes(f.wk))&&(!from||a.date>=from)&&(!to||a.date<=to));
+  const by={}; F.forEach(a=>{(by[a.date]=by[a.date]||[]).push(a)});
   const days=Object.keys(by).sort().reverse();
+  const T=totals(F),fOn=f.obj||f.wk||f.per!=='all',nObj=new Set(F.map(a=>a.object)).size,nDay=days.length;
   app.innerHTML=`${!DB.settings.me.length?'<div class="warn">Сначала выберите себя: «Меню → Кто я».</div>':''}
+   ${DB.acts.length?`<div class="card"><div class="row" style="flex-wrap:wrap"><select id="lObj" style="flex-basis:100%"><option value="">Все объекты</option>${objsAll.map(o=>`<option ${o===f.obj?'selected':''} value="${esc(o)}">${esc(o)}</option>`).join('')}</select>
+    <select id="lWk" style="flex-basis:100%"><option value="">Все работники</option>${wksAll.map(w=>`<option ${w===f.wk?'selected':''} value="${esc(w)}">${esc(w)}</option>`).join('')}</select></div>
+    <div class="chips" style="margin-top:8px">${PERS.map(([k,l])=>`<button class="chip ${f.per===k?'on':''}" data-per="${k}">${l}</button>`).join('')}</div>
+    ${f.per==='custom'?`<div class="row"><div><label>с</label><input type="date" id="lFrom" value="${f.from}"></div><div><label>по</label><input type="date" id="lTo" value="${f.to}"></div></div>`:''}
+    <div class="hint">Найдено: ${F.length} кв. · ${fmtN(T.m2)} м² · ${T.def} деф.${fOn?' · <a href="#" id="lReset">сбросить фильтр</a>':''}</div>
+    ${F.length>1&&nDay>1&&nObj===1?`<div style="margin-top:8px"><button class="btn" id="lSum">Сводный акт за период (${F.length} кв.)</button></div>`:''}
+    ${F.length>1&&nDay>1&&nObj>1?'<div class="hint">Для сводного акта за период выберите один объект.</div>':''}</div>`:''}
    ${days.length?days.map(d=>{const L=by[d].sort((a,b)=>a.created-b.created);const t=totals(L);
      return `<div class="card"><div class="day"><b>${fmtDate(d)}</b><span class="muted" style="font-size:13px">${L.length} кв. · ${fmtN(t.m2)} м² · ${t.def} деф.</span></div>
      ${L.map(a=>{const tt=totals(a);return `<div class="it"><div class="m"><b>Кв. ${esc(a.kv||'—')}</b><div class="s">${esc(a.object||'объект не выбран')} · ${fmtN(tt.m2)} м² · ${tt.def} деф. · фото ${itemPhotos(a).length}</div></div><button class="btn small sec" data-open="${a.id}">Открыть</button></div>`}).join('')}
      ${[...new Set(L.map(a=>a.object))].filter(o=>L.filter(a=>a.object===o).length>1).map(o=>`<div style="margin-top:8px"><button class="btn" data-day="${d}" data-obj="${esc(o)}">Общий акт за ${fmtDate(d)}${new Set(L.map(a=>a.object)).size>1?' · '+esc(o):''}</button></div>`).join('')}</div>`}).join('')
-   :'<div class="card muted">Пока пусто. Нажмите «Новый акт».</div>'}`;
+   :`<div class="card muted">${DB.acts.length?'По фильтру ничего не найдено.':'Пока пусто. Нажмите «Новый акт».'}</div>`}`;
+  const sv=()=>{save();renderList()};
+  const lo=$('#lObj');if(lo)lo.onchange=()=>{f.obj=lo.value;sv()};
+  const lw=$('#lWk');if(lw)lw.onchange=()=>{f.wk=lw.value;sv()};
+  app.querySelectorAll('[data-per]').forEach(b=>b.onclick=()=>{f.per=b.dataset.per;if(f.per==='custom'&&!f.from){f.from=from||today();f.to=to||today()}sv()});
+  const lf=$('#lFrom');if(lf)lf.onchange=()=>{f.from=lf.value;sv()};
+  const lt=$('#lTo');if(lt)lt.onchange=()=>{f.to=lt.value;sv()};
+  const lr=$('#lReset');if(lr)lr.onclick=e=>{e.preventDefault();DB.settings.flt={obj:'',wk:'',per:'all',from:'',to:''};sv()};
+  const ls=$('#lSum');if(ls)ls.onclick=()=>{cur=null;prevActs=F.slice().sort((a,b)=>a.date.localeCompare(b.date)||a.created-b.created);go('preview')};
   app.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>{cur=DB.acts.find(x=>x.id===b.dataset.open);go('edit')});
   app.querySelectorAll('[data-day]').forEach(b=>b.onclick=()=>{cur=null;prevActs=by[b.dataset.day].filter(a=>a.object===b.dataset.obj);go('preview')});
   bar(`<button class="btn" id="bNew">+ Новый акт</button>`);
@@ -287,26 +314,26 @@ function pickItem(){
 const PW=1240,PH=1754,MG=64;
 async function loadImgs(acts){const m={};for(const a of acts)for(const id of itemPhotos(a)){const b=await phGet(id);if(b){try{m[id]=await createImageBitmap(b)}catch(e){m[id]=await new Promise(r=>{const i=new Image();i.onload=()=>r(i);i.onerror=()=>r(null);i.src=URL.createObjectURL(b)})}}}return m}
 async function drawActs(acts){
-  const imgs=await loadImgs(acts);const pages=[];let g,y;const multi=acts.length>1;
+  const imgs=await loadImgs(acts);const pages=[];let g,y;const multi=acts.length>1;const span=actDates(acts).length>1,dstr=dspan(acts);
   const objs=[...new Set(acts.map(a=>a.object))], wks=[...new Set(acts.flatMap(a=>a.workers||[]))];
   const font=(px,w=400,col='#000')=>{g.font=`${w} ${px}px Roboto, Arial, sans-serif`;g.fillStyle=col};
   const newPage=()=>{const c=document.createElement('canvas');c.width=PW;c.height=PH;g=c.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,PW,PH);pages.push(c);y=MG;
-    if(pages.length>1){font(19,400,'#666');g.fillText((multi?'Акт за '+fmtDate(acts[0].date):'Кв. '+acts[0].kv+' · '+fmtDate(acts[0].date))+' (продолжение)',MG,y);y+=34}};
+    if(pages.length>1){font(19,400,'#666');g.fillText((multi?(span?'Сводный акт за ':'Акт за ')+dstr:'Кв. '+acts[0].kv+' · '+fmtDate(acts[0].date))+' (продолжение)',MG,y);y+=34}};
   const need=h=>{if(y+h>PH-MG-30)newPage()};
   const text=(s,x,yy,px,w,col,al)=>{font(px,w,col);g.textAlign=al||'left';g.fillText(s,x,yy);g.textAlign='left'};
   const wrap=(s,x,maxW,lh)=>{let line='';for(const w of String(s).split(/\s+/)){const t=line?line+' '+w:w;if(g.measureText(t).width>maxW&&line){need(lh);g.fillText(line,x,y);y+=lh;line=w}else line=t}if(line){need(lh);g.fillText(line,x,y);y+=lh}};
   const fit=(s,maxW)=>{s=String(s);while(g.measureText(s).width>maxW&&s.length>1)s=s.slice(0,-1);return s};
   newPage();
-  text(multi?'АКТ ВЫПОЛНЕННЫХ РАБОТ ЗА ДЕНЬ':'АКТ ВЫПОЛНЕННЫХ РАБОТ ПО КВАРТИРЕ',PW/2,y+22,34,700,'#000','center');y+=56;
+  text(span?'СВОДНЫЙ АКТ ВЫПОЛНЕННЫХ РАБОТ ЗА ПЕРИОД':multi?'АКТ ВЫПОЛНЕННЫХ РАБОТ ЗА ДЕНЬ':'АКТ ВЫПОЛНЕННЫХ РАБОТ ПО КВАРТИРЕ',PW/2,y+22,34,700,'#000','center');y+=56;
   text('внутренний документ',PW/2,y,19,400,'#666','center');y+=40;
-  const info=[['Объект',objs.map(o=>o+(objAddr(o)?', '+objAddr(o):'')).join('; ')],[multi?'Квартиры':'Квартира / помещение',acts.map(a=>a.kv).join(', ')],
-    ['Дата',fmtDate(acts[0].date)+(!multi&&(acts[0].keysIn||acts[0].keysOut)?`     ключи: получены ${acts[0].keysIn||'—'}, сданы ${acts[0].keysOut||'—'}`:'')],['Исполнители',wks.join(', ')||'—']];
+  const info=[['Объект',objs.map(o=>o+(objAddr(o)?', '+objAddr(o):'')).join('; ')],[multi?'Квартиры':'Квартира / помещение',[...new Set(acts.map(a=>a.kv))].join(', ')],
+    [span?'Период':'Дата',dstr+(!multi&&(acts[0].keysIn||acts[0].keysOut)?`     ключи: получены ${acts[0].keysIn||'—'}, сданы ${acts[0].keysOut||'—'}`:'')],['Исполнители',wks.join(', ')||'—']];
   for(const [k,v] of info){font(23,700);g.fillText(k+':',MG,y);const kw=g.measureText(k+': ').width;font(23);wrap(v||'—',MG+kw,PW-2*MG-kw,31);y+=3}
   y+=8;
   if(multi){ // сводка по квартирам
-    const cw=[300,300,300,212],hd=['Квартира','Шлифовка, м²','СП','Реставрация, деф.'],rh=40;
+    const cw=span?[170,220,250,200,272]:[300,300,300,212],hd=(span?['Дата']:[]).concat(['Квартира','Шлифовка, м²','СП','Реставрация, деф.']),rh=40;
     const row=(v,b,f)=>{need(rh);let x=MG;if(f){g.fillStyle='#eef1f5';g.fillRect(MG,y,cw.reduce((a,b)=>a+b),rh)}v.forEach((s,k)=>{g.strokeStyle='#000';g.lineWidth=1.5;g.strokeRect(x,y,cw[k],rh);font(20,b?700:400);g.fillText(fit(s,cw[k]-14),x+8,y+27);x+=cw[k]});y+=rh};
-    row(hd,true,true);acts.forEach(a=>{const t=totals(a);row(['Кв. '+a.kv,fmtN(t.m2),t.sp,t.def])});const T=totals(acts);row(['ИТОГО',fmtN(T.m2),T.sp,T.def],true,true);y+=26;
+    row(hd,true,true);acts.forEach(a=>{const t=totals(a);row((span?[fmtDate(a.date)]:[]).concat(['Кв. '+a.kv,fmtN(t.m2),t.sp,t.def]))});const T=totals(acts);row((span?['ИТОГО','']:['ИТОГО']).concat([fmtN(T.m2),T.sp,T.def]),true,true);y+=26;
   }
   const photoBlock=(list,x,w)=>{ // возвращает высоту и рисует
     const ph=list.map(p=>({p,im:imgs[p.id]})).filter(o=>o.im).sort((a,b)=>(a.p.tag==='до'?0:1)-(b.p.tag==='до'?0:1));
@@ -327,7 +354,7 @@ async function drawActs(acts){
     let by=fy+fh+25;if(w.size){text('Размер: '+w.size,x+12,by,17,400,'#444');by+=28}text('Итого: '+fmtN(wm)+' м²',x+12,by,18,600);return bh};
   for(const a of acts){
     const t=totals(a);
-    if(multi){need(70);g.fillStyle='#1f4e79';g.fillRect(MG,y,PW-2*MG,44);text('Кв. '+a.kv+(objs.length>1?' · '+a.object:''),MG+14,y+30,24,700,'#fff');
+    if(multi){need(70);g.fillStyle='#1f4e79';g.fillRect(MG,y,PW-2*MG,44);text('Кв. '+a.kv+(span?' · '+fmtDate(a.date):'')+(objs.length>1?' · '+a.object:''),MG+14,y+30,24,700,'#fff');
       text(`${fmtN(t.m2)} м² · ${t.def} деф.`,PW-MG-14,y+30,20,400,'#fff','right');y+=60}
     if(a.windows.length){
       need(80);text('Шлифовка стеклопакетов',MG,y+8,26,700);text(`итого ${fmtN(t.m2)} м², ${t.sp} СП`,PW-MG,y+8,20,400,'#444','right');y+=22;
@@ -351,7 +378,7 @@ async function drawActs(acts){
     if(multi)y+=10;
   }
   const T=totals(acts);need(200);g.strokeStyle='#000';g.lineWidth=2;g.strokeRect(MG,y,PW-2*MG,86);
-  text(multi?'Итого за день:':'Итого по квартире:',MG+16,y+36,23,700);text(`шлифовка ${fmtN(T.m2)} м² (${T.sp} СП)     реставрация ${T.def} деф.`,MG+250,y+36,23);
+  text(span?'Итого за период:':multi?'Итого за день:':'Итого по квартире:',MG+16,y+36,23,700);text(`шлифовка ${fmtN(T.m2)} м² (${T.sp} СП)     реставрация ${T.def} деф.`,MG+250,y+36,23);
   text('Исполнители: '+(wks.join(', ')||'—'),MG+16,y+70,19,400,'#333');y+=116;
   font(20);wrap('Места выполнения работ и объём подтверждаются прорабом ответом на это сообщение в чате объекта.',MG,PW-2*MG,28);
   const stamp='Сформировано '+new Date().toLocaleString('ru-RU');
@@ -381,10 +408,10 @@ function dataRows(acts){const out=[];acts.forEach(a=>{
   a.rest.forEach(r=>out.push([a.kv,r.kind,r.ok||'','',r.item+(r.num?' '+r.num:''),'',r.qty]))});return out}
 function textReport(acts){
   const T=totals(acts),objs=[...new Set(acts.map(a=>a.object))],wks=[...new Set(acts.flatMap(a=>a.workers||[]))];
-  let s=`Акт ${acts.length>1?'за день ':''}${fmtDate(acts[0].date)} — ${objs.join('; ')}\nИсполнители: ${wks.join(', ')||'—'}\n`;
+  const sp=actDates(acts).length>1;let s=`${sp?'Сводный акт за ':acts.length>1?'Акт за день ':'Акт '}${dspan(acts)} — ${objs.join('; ')}\nИсполнители: ${wks.join(', ')||'—'}\n`;
   acts.forEach(a=>{const t=totals(a);const ws=a.windows.map(w=>{const p=w.panes.map((p,j)=>p.mark&&p.mark!=='×'?`${j+1}СП${p.mark}${num(p.m2)?' '+fmtN(num(p.m2)):''}`:'').filter(Boolean);return p.length?winLabel(w)+': '+p.join(', '):''}).filter(Boolean);
     const rs=a.rest.map(r=>`${kindOf(r.kind).short} ${itemLabel(r)}${r.ok?' ОК-'+r.ok:''} — ${r.qty}`);
-    s+=`\nКв. ${a.kv}: шлифовка ${fmtN(t.m2)} м²${ws.length?' ('+ws.join('; ')+')':''}${rs.length?'; реставрация '+t.def+' деф. ('+rs.join('; ')+')':''}${a.note?'. Прим.: '+a.note:''}`});
+    s+=`\n${sp?fmtDate(a.date)+' ':''}Кв. ${a.kv}: шлифовка ${fmtN(t.m2)} м²${ws.length?' ('+ws.join('; ')+')':''}${rs.length?'; реставрация '+t.def+' деф. ('+rs.join('; ')+')':''}${a.note?'. Прим.: '+a.note:''}`});
   s+=`\n\nИтого: шлифовка ${fmtN(T.m2)} м² (${T.sp} СП), реставрация ${T.def} деф.\n\nДля заявки:\n`+dataRows(acts).map(r=>r.join(';')).join('\n');
   return s;
 }
@@ -392,7 +419,7 @@ async function copyText(t){try{await navigator.clipboard.writeText(t);return tru
 
 /* ===== экран готового акта ===== */
 let lastPages=[];
-const fname=(acts,ext)=>(acts.length>1?`Акт за день ${fmtDate(acts[0].date)}`:`Акт кв ${String(acts[0].kv).replace(/[\\/:*?"<>|]/g,'-')} ${fmtDate(acts[0].date)}`)+'.'+ext;
+const fname=(acts,ext)=>(acts.length>1?`${actDates(acts).length>1?'Сводный акт':'Акт за день'} ${dspan(acts)}`:`Акт кв ${String(acts[0].kv).replace(/[\\/:*?"<>|]/g,'-')} ${fmtDate(acts[0].date)}`)+'.'+ext;
 async function renderPreview(){
   const acts=prevActs;app.innerHTML='<div class="card muted">Собираю акт…</div>';bar('');
   lastPages=await drawActs(acts);const t=totals(acts);
@@ -410,7 +437,7 @@ async function renderPreview(){
   const be=$('#bEdit');if(be)be.onclick=()=>{cur=acts[0];go('edit')};$('#bList').onclick=()=>go('list');
 }
 async function share(files,acts){
-  const text=acts.length>1?`Акт за ${fmtDate(acts[0].date)}, кв. ${acts.map(a=>a.kv).join(', ')}. Прошу подтвердить ответом.`:`Акт кв. ${acts[0].kv} от ${fmtDate(acts[0].date)} (${acts[0].object}). Прошу подтвердить ответом.`;
+  const text=acts.length>1?`${actDates(acts).length>1?'Сводный акт':'Акт'} за ${dspan(acts)} (${acts[0].object}), кв. ${[...new Set(acts.map(a=>a.kv))].join(', ')}. Прошу подтвердить ответом.`:`Акт кв. ${acts[0].kv} от ${fmtDate(acts[0].date)} (${acts[0].object}). Прошу подтвердить ответом.`;
   try{if(navigator.canShare&&navigator.canShare({files})){await navigator.share({files,text});return}}catch(e){if(e&&e.name==='AbortError')return}
   files.forEach(f=>{const u=URL.createObjectURL(f);const l=document.createElement('a');l.href=u;l.download=f.name;document.body.appendChild(l);l.click();l.remove();setTimeout(()=>URL.revokeObjectURL(u),5000)});
   toast('Файл сохранён — прикрепите его в чат');
