@@ -34,13 +34,15 @@ textarea{min-height:64px;resize:vertical}
 .stepper{display:flex;align-items:center;gap:6px;margin-left:auto}
 .stepper button{width:36px;height:36px;border-radius:10px;border:1px solid var(--line);background:#fff;font-size:20px}
 .stepper span{min-width:44px;text-align:center;font-weight:600}
-.panes{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:8px;margin-top:10px}
+.panes{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:8px;margin-top:10px}
 .pane{border:2px solid #8a96a8;border-radius:8px;background:#eef4fb;padding:6px;text-align:center}
 .pane .n{font-size:12px;color:var(--muted);text-align:left}
 .pane .mk{font-size:30px;font-weight:700;height:40px;line-height:40px;cursor:pointer;user-select:none}
 .pane.m-plus{background:#e3f4e8;border-color:var(--ok)}.pane.m-minus{background:#fde8e6;border-color:var(--bad)}
 .pane.m-both{background:#fff1d6;border-color:#b7791f}.pane.m-x{background:#eceff3;border-color:#555}
 .pane input{padding:6px;text-align:center;font-size:15px}
+.pane .sd{display:flex;align-items:center;gap:4px;margin-top:4px}.pane .sd span{font-size:11px;color:var(--muted);width:30px;text-align:left}
+.pane .mk{font-size:26px;height:34px;line-height:34px}.pane .xb{font-size:11px;color:var(--muted);margin-top:4px;cursor:pointer;text-decoration:underline}
 .hint{font-size:12.5px;color:var(--muted);margin-top:6px}
 .ritem .t{font-weight:600}.ritem .k{font-size:12.5px;color:var(--muted)}
 .ritem .row{margin-top:8px;align-items:flex-end}
@@ -82,7 +84,8 @@ const KINDS=[
 ];
 const ABBR={'Отопительный прибор':'ОП'};
 const WTYPES=['ОК','Балконная дверь','Витраж','Входная группа','Лоджия'];
-const MARKS=['','+','−','±','×'], MCLS={'+':'m-plus','−':'m-minus','±':'m-both','×':'m-x'};
+const MCLS={'+':'m-plus','−':'m-minus','±':'m-both','×':'m-x'};
+function paneCalc(p){const pn=v=>{const x=parseFloat(String(v??'').replace(',','.'));return isFinite(x)&&x>0?x:0};const o=pn(p.out),i=pn(p.in);if(p.x){p.mark='×';p.m2='';return p}p.mark=o&&i?'±':o?'+':i?'−':'';const t=Math.round((o+i)*1000)/1000;p.m2=t?String(t).replace('.',','):'';return p}
 
 /* ===== хранение ===== */
 const KEY='akt-kv-v1', CKEY='akt-cfg';
@@ -90,7 +93,8 @@ let DB={settings:{me:[],object:''},acts:[]};
 try{const s=localStorage.getItem(KEY); if(s){const d=JSON.parse(s); DB=Object.assign(DB,d)}}catch(e){}
 if(!Array.isArray(DB.settings.me))DB.settings.me=[];
 const toArr=v=>Array.isArray(v)?v:String(v||'').split(',').map(x=>x.trim()).filter(Boolean);
-DB.acts.forEach(a=>{a.workers=toArr(a.workers);a.windows.forEach(w=>w.photos=w.photos||[]);a.rest.forEach(r=>r.photos=r.photos||[])});
+function paneMig(p){if('out' in p)return;const v=String(p.m2||'');if(p.mark==='×'){p.x=true;p.out='';p.in=''}else if(p.mark==='−'){p.out='';p.in=v}else if(p.mark==='±'&&parseFloat(v.replace(',','.'))>0){const h=Math.round(parseFloat(v.replace(',','.'))*50)/100;p.out=String(h).replace('.',',');p.in=p.out}else{p.out=v;p.in=''}}
+DB.acts.forEach(a=>{a.workers=toArr(a.workers);a.windows.forEach(w=>{w.photos=w.photos||[];w.panes.forEach(paneMig)});a.rest.forEach(r=>r.photos=r.photos||[])});
 let CFG={objects:[],workers:[]};
 try{const s=localStorage.getItem(CKEY); if(s) CFG=Object.assign(CFG,JSON.parse(s))}catch(e){}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(DB))}catch(e){toast('Память телефона заполнена — удалите старые акты')}}
@@ -258,7 +262,7 @@ function renderEdit(){
    <div>${a.windows.map(winHtml).join('')}</div>
    ${t.warn?`<div class="warn">У ${t.warn} отмеченных СП не указана площадь.</div>`:''}
    <button class="btn ghost" id="addWin">+ Окно / конструкция</button>
-   <div class="hint">Тап по стеклу: <b>+</b> снаружи → <b>−</b> изнутри → <b>±</b> с двух сторон → <b>×</b> не устраняется → пусто.</div></div>
+   <div class="hint">Впишите площадь снаружи и/или внутри — знак поставится сам: <b>+</b> снаружи, <b>−</b> изнутри, <b>±</b> с двух сторон (площади складываются). Если дефект не устраняется — «брак / трещина ×».</div></div>
   <div class="card"><h2>Реставрация <span class="sum">${t.def} деф.</span></h2>
    <div>${a.rest.map(restHtml).join('')}</div><button class="btn ghost" id="addRest">+ Предмет</button></div>
   <div class="card"><h2>Примечание</h2><textarea id="fNote" placeholder="Что не сделано и почему">${esc(a.note)}</textarea></div>
@@ -266,7 +270,7 @@ function renderEdit(){
   const bind=(id,k)=>{const el=$(id);if(!el)return;el.oninput=el.onchange=()=>{a[k]=el.value;save();if(k==='kv')$('#ttl').textContent='Кв. '+(a.kv||'…');if(k==='object')renderEdit()}};
   bind('#fObj','object');bind('#fKv','kv');bind('#fDate','date');bind('#fKi','keysIn');bind('#fKo','keysOut');bind('#fNote','note');
   app.querySelectorAll('[data-aw]').forEach(b=>b.onclick=()=>{const w=b.dataset.aw;a.workers=a.workers.includes(w)?a.workers.filter(x=>x!==w):[...a.workers,w];save();b.classList.toggle('on')});
-  $('#addWin').onclick=()=>{a.windows.push({type:'ОК',ok:String(a.windows.filter(w=>w.type==='ОК').length+1),size:'',panes:[{mark:'',m2:''},{mark:'',m2:''}],photos:[]});save();renderEdit()};
+  $('#addWin').onclick=()=>{a.windows.push({type:'ОК',ok:String(a.windows.filter(w=>w.type==='ОК').length+1),size:'',panes:[{mark:'',m2:'',out:'',in:''},{mark:'',m2:'',out:'',in:''}],photos:[]});save();renderEdit()};
   $('#addRest').onclick=pickItem;
   $('#delAct').onclick=async()=>{if(confirm('Удалить акт по кв. '+(a.kv||'')+' вместе с фото?')){for(const id of itemPhotos(a))await phDel(id);DB.acts=DB.acts.filter(x=>x.id!==a.id);save();go('list')}};
   bindWins();bindRest();bindPhotos();
@@ -282,7 +286,10 @@ function winHtml(w,i){
    <select data-wt="${i}" style="width:auto">${WTYPES.map(t=>`<option ${t===w.type?'selected':''}>${t}</option>`).join('')}</select>
    ${w.type==='ОК'?`<input class="okn" data-wo="${i}" value="${esc(w.ok)}" inputmode="numeric" placeholder="№">`:''}
    <div class="stepper"><button data-wm="${i}">−</button><span>${w.panes.length} СП</span><button data-wp="${i}">+</button></div></div>
-   <div class="panes">${w.panes.map((p,j)=>`<div class="pane ${MCLS[p.mark]||''}"><div class="n">${j+1} СП</div><div class="mk" data-pm="${i}:${j}">${p.mark||'·'}</div><input data-pa="${i}:${j}" value="${esc(p.m2)}" inputmode="decimal" placeholder="м²"></div>`).join('')}</div>
+   <div class="panes">${w.panes.map((p,j)=>`<div class="pane ${MCLS[p.mark]||''}"><div class="n">${j+1} СП</div><div class="mk">${p.mark||''}</div>
+     <div class="sd"><span>снар.</span><input data-po="${i}:${j}" value="${esc(p.out)}" inputmode="decimal" placeholder="м²" ${p.x?'disabled':''}></div>
+     <div class="sd"><span>внутр.</span><input data-pi="${i}:${j}" value="${esc(p.in)}" inputmode="decimal" placeholder="м²" ${p.x?'disabled':''}></div>
+     <div class="xb" data-px="${i}:${j}">${p.x?'снять «брак»':'брак / трещина ×'}</div></div>`).join('')}</div>
    ${photoRow(w.photos,'w'+i)}
    <div class="row" style="margin-top:8px;align-items:center"><input data-ws="${i}" value="${esc(w.size)}" placeholder="Размер СП (необязательно)"><button class="del" data-wd="${i}" style="flex:0 0 auto">Удалить</button></div></div>`;
 }
@@ -314,11 +321,12 @@ function bindWins(){
   q('[data-wt]',s=>s.onchange=()=>{a.windows[+s.dataset.wt].type=s.value;save();renderEdit()});
   q('[data-wo]',s=>s.oninput=()=>{a.windows[+s.dataset.wo].ok=s.value;save()});
   q('[data-ws]',s=>s.oninput=()=>{a.windows[+s.dataset.ws].size=s.value;save()});
-  q('[data-wp]',b=>b.onclick=()=>{const w=a.windows[+b.dataset.wp];if(w.panes.length<12)w.panes.push({mark:'',m2:''});save();renderEdit()});
+  q('[data-wp]',b=>b.onclick=()=>{const w=a.windows[+b.dataset.wp];if(w.panes.length<12)w.panes.push({mark:'',m2:'',out:'',in:''});save();renderEdit()});
   q('[data-wm]',b=>b.onclick=()=>{const w=a.windows[+b.dataset.wm];if(w.panes.length>1)w.panes.pop();save();renderEdit()});
   q('[data-wd]',b=>b.onclick=async()=>{const w=a.windows[+b.dataset.wd];if(confirm('Удалить '+winLabel(w)+'?')){for(const p of w.photos||[])await phDel(p.id);a.windows.splice(+b.dataset.wd,1);save();renderEdit()}});
-  q('[data-pm]',d=>d.onclick=()=>{const [i,j]=d.dataset.pm.split(':').map(Number);const p=a.windows[i].panes[j];p.mark=MARKS[(MARKS.indexOf(p.mark)+1)%MARKS.length];save();d.textContent=p.mark||'·';d.parentNode.className='pane '+(MCLS[p.mark]||'');updSums()});
-  q('[data-pa]',s=>s.oninput=()=>{const [i,j]=s.dataset.pa.split(':').map(Number);a.windows[i].panes[j].m2=s.value;save();updSums()});
+  const paneIn=(s,key)=>s.oninput=()=>{const [i,j]=s.dataset[key==='out'?'po':'pi'].split(':').map(Number);const p=a.windows[i].panes[j];p[key]=s.value;paneCalc(p);save();const el=s.closest('.pane');el.className='pane '+(MCLS[p.mark]||'');el.querySelector('.mk').textContent=p.mark||'';updSums()};
+  q('[data-po]',s=>paneIn(s,'out'));q('[data-pi]',s=>paneIn(s,'in'));
+  q('[data-px]',d=>d.onclick=()=>{const [i,j]=d.dataset.px.split(':').map(Number);const p=a.windows[i].panes[j];p.x=!p.x;paneCalc(p);save();renderEdit()});
 }
 function updSums(){const t=totals(cur);const all=app.querySelectorAll('.card h2 .sum');if(all[0])all[0].textContent=fmtN(t.m2)+' м² · '+t.sp+' СП'}
 function bindRest(){
@@ -360,7 +368,7 @@ async function drawActs(acts){
   const fit=(s,maxW)=>{s=String(s);while(g.measureText(s).width>maxW&&s.length>1)s=s.slice(0,-1);return s};
   newPage();
   text(span?'СВОДНЫЙ ПРОМЕЖУТОЧНЫЙ АКТ ЗА ПЕРИОД':multi?'ПРОМЕЖУТОЧНЫЙ АКТ ЗА ДЕНЬ':'ПРОМЕЖУТОЧНЫЙ АКТ ПО КВАРТИРЕ',PW/2,y+22,34,700,'#000','center');y+=56;
-  text('внутренний документ подрядчика · не является актом выполненных работ',PW/2,y,19,400,'#666','center');y+=40;
+  y+=8;
   const info=[['Объект',objs.map(o=>o+(objAddr(o)?', '+objAddr(o):'')).join('; ')],[multi?'Квартиры':'Квартира / помещение',[...new Set(acts.map(a=>a.kv))].join(', ')],
     [span?'Период':'Дата',dstr+(!multi&&(acts[0].keysIn||acts[0].keysOut)?`     ключи: получены ${acts[0].keysIn||'—'}, сданы ${acts[0].keysOut||'—'}`:'')],['Исполнители',wks.join(', ')||'—']];
   for(const [k,v] of info){font(23,700);g.fillText(k+':',MG,y);const kw=g.measureText(k+': ').width;font(23);wrap(v||'—',MG+kw,PW-2*MG-kw,31);y+=3}
@@ -387,7 +395,7 @@ async function drawActs(acts){
     g.strokeStyle='#000';g.lineWidth=2;g.strokeRect(x,yy,bw,bh);text(winLabel(w),x+12,yy+31,23,700);text(n+' СП',x+bw-12,yy+31,18,400,'#555','right');
     const fx=x+12,fy=yy+44,fw=bw-24,fh=rows*ph,pw=fw/per;g.lineWidth=4;g.strokeRect(fx,fy,fw,fh);g.lineWidth=2;let wm=0;
     w.panes.forEach((p,j)=>{const r=Math.floor(j/per),c=j%per,px=fx+c*pw,py=fy+r*ph;g.strokeRect(px+4,py+4,pw-8,ph-8);text(String(j+1),px+10,py+23,16,400,'#555');
-      if(p.mark)text(p.mark,px+pw/2,py+64,46,700,p.mark==='×'?'#444':'#000','center');if(num(p.m2)){text(fmtN(num(p.m2))+' м²',px+pw/2,py+ph-12,17,600,'#000','center');wm+=num(p.m2)}});
+      if(p.mark)text(p.mark,px+pw/2,py+64,46,700,p.mark==='×'?'#444':'#000','center');if(num(p.m2)){text((p.mark==='±'&&num(p.out)&&num(p.in)?fmtN(num(p.out))+'+'+fmtN(num(p.in)):fmtN(num(p.m2)))+' м²',px+pw/2,py+ph-12,17,600,'#000','center');wm+=num(p.m2)}});
     let by=fy+fh+25;if(w.size){text('Размер: '+w.size,x+12,by,17,400,'#444');by+=28}text('Итого: '+fmtN(wm)+' м²',x+12,by,18,600);return bh};
   for(const a of acts){
     const t=totals(a);
@@ -458,7 +466,7 @@ function textReport(acts){
     const rs=a.rest.map(r=>`${kindOf(r.kind).short} ${itemLabel(r)}${r.ok?' ОК-'+r.ok:''} — ${r.qty}`);
     s+=`\n${sp?fmtDate(a.date)+' ':''}Кв. ${a.kv}: шлифовка ${fmtN(t.m2)} м²${ws.length?' ('+ws.join('; ')+')':''}${rs.length?'; реставрация '+t.def+' деф. ('+rs.join('; ')+')':''}${a.note?'. Прим.: '+a.note:''}`});
   s+=`\n\nИтого: шлифовка ${fmtN(T.m2)} м² (${T.sp} СП), реставрация ${T.def} деф.\n\nДля заявки:\n`+dataRows(acts).map(r=>r.join(';')).join('\n');
-  return s;
+  return s+'\n\nПрошу подтвердить приемку выполненных работ ответом.';
 }
 async function copyText(t){try{await navigator.clipboard.writeText(t);return true}catch(e){const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();let ok=false;try{ok=document.execCommand('copy')}catch(_){}ta.remove();return ok}}
 
@@ -489,7 +497,7 @@ async function renderPreview(){
   const be=$('#bEdit');if(be)be.onclick=()=>{cur=acts[0];go('edit')};$('#bList').onclick=()=>go('list');
 }
 async function share(files,acts){
-  const text=acts.length>1?`${actDates(acts).length>1?'Сводный промежуточный акт':'Промежуточный акт'} за ${dspan(acts)} (${acts[0].object}), кв. ${[...new Set(acts.map(a=>a.kv))].join(', ')}. Прошу подтвердить ответом.`:`Промежуточный акт кв. ${acts[0].kv} от ${fmtDate(acts[0].date)} (${acts[0].object}). Прошу подтвердить ответом.`;
+  const text=acts.length>1?`${actDates(acts).length>1?'Сводный промежуточный акт':'Промежуточный акт'} за ${dspan(acts)} (${acts[0].object}), кв. ${[...new Set(acts.map(a=>a.kv))].join(', ')}.`+'\n\nПрошу подтвердить приемку выполненных работ ответом.':`Промежуточный акт кв. ${acts[0].kv} от ${fmtDate(acts[0].date)} (${acts[0].object}).`+'\n\nПрошу подтвердить приемку выполненных работ ответом.';
   try{if(navigator.canShare&&navigator.canShare({files})){await navigator.share({files,text});return}}catch(e){if(e&&e.name==='AbortError')return}
   files.forEach(f=>{const u=URL.createObjectURL(f);const l=document.createElement('a');l.href=u;l.download=f.name;document.body.appendChild(l);l.click();l.remove();setTimeout(()=>URL.revokeObjectURL(u),5000)});
   toast('Файл сохранён — прикрепите его в чат');
